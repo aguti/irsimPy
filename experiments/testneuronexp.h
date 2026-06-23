@@ -101,7 +101,6 @@ private:
 		unsigned int* 	m_unEvoDevoLayerFlag;
 		unsigned int* 	m_unLearningDiagonalFlag;
 
-    /*dVector2* vRandomCenter;*/
 };
 
 /******************************************************************************/
