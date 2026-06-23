@@ -28,7 +28,7 @@
 #include "wheelsactuator.h"
 
 /******************** Controllers **************/
-#include "testbatterycontroller.h"
+#include "pythonbatterycontroller.h"
 
 using namespace std;
 
@@ -186,7 +186,7 @@ void CTestBatteryExp::SetController(CEpuck* pc_epuck)
 {
 	char pchTemp[128];
 	sprintf(pchTemp, "Iri1");
-	CController* pcController = new CTestBatteryController(pchTemp, pc_epuck);
+	CController* pcController = new CPythonBatteryController(pchTemp, pc_epuck, "python/battery_controller.py");
 	pc_epuck->SetControllerType( CONTROLLER_TEST_BATTERY );
 	pc_epuck->SetController(pcController);
 

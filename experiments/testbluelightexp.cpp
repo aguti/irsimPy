@@ -23,7 +23,7 @@
 #include "wheelsactuator.h"
 
 /******************** Controllers **************/
-#include "testbluelightcontroller.h"
+#include "pythonbluelightcontroller.h"
 
 
 
@@ -148,7 +148,7 @@ void CTestBlueLightExp::SetController(CEpuck* pc_epuck)
 	/* Create and add test light controller */
 	char pchTemp[128];
 	sprintf(pchTemp, "testbluelight");
-	CController* pcController = new CTestBlueLightController(pchTemp, pc_epuck);
+	CController* pcController = new CPythonBlueLightController(pchTemp, pc_epuck, "python/bluelight_controller.py");
 	pc_epuck->SetControllerType( CONTROLLER_TEST_BLUE_LIGHT );
 	pc_epuck->SetController(pcController);
 }

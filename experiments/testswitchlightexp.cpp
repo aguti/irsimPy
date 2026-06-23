@@ -23,7 +23,7 @@
 #include "wheelsactuator.h"
 
 /******************** Controllers **************/
-#include "testswitchlightcontroller.h"
+#include "pythonswitchlightcontroller.h"
 
 
 
@@ -153,7 +153,7 @@ void CTestSwitchLightExp::SetController(CEpuck* pc_epuck)
 	/* Create and add test light controller */
 	char pchTemp[128];
 	sprintf(pchTemp, "testswitchlight");
-	CController* pcController = new CTestSwitchLightController(pchTemp, pc_epuck);
+	CController* pcController = new CPythonSwitchLightController(pchTemp, pc_epuck, "python/switchlight_controller.py");
 	pc_epuck->SetControllerType( CONTROLLER_TEST_LIGHT );
 	pc_epuck->SetController(pcController);
 }

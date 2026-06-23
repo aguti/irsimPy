@@ -27,7 +27,7 @@
 #include "wheelsactuator.h"
 
 /******************** Controllers **************/
-#include "testgroundcontroller.h"
+#include "pythongroundcontroller.h"
 
 using namespace std;
 
@@ -206,7 +206,7 @@ void CTestGroundExp::SetController(CEpuck* pc_epuck)
 {
 	char pchTemp[128];
 	sprintf(pchTemp, "Iri1");
-	CController* pcController = new CTestGroundController(pchTemp, pc_epuck);
+	CController* pcController = new CPythonGroundController(pchTemp, pc_epuck, "python/ground_controller.py");
 	pc_epuck->SetControllerType( CONTROLLER_TEST_GROUND );
 	pc_epuck->SetController(pcController);
 

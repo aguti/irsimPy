@@ -35,7 +35,7 @@
 #include "wheelsactuator.h"
 
 /******************** Controllers **************/
-#include "iri1controller.h"
+#include "pythoniri1controller.h"
 
 using namespace std;
 
@@ -446,7 +446,7 @@ void CIri1Exp::SetController(CEpuck* pc_epuck)
 {
 	char pchTemp[128];
 	sprintf(pchTemp, "Iri1");
-	CController* pcController = new CIri1Controller(pchTemp, pc_epuck, m_nWriteToFile);
+	CController* pcController = new CPythonIri1Controller(pchTemp, pc_epuck, "python/iri1_controller.py", m_nWriteToFile);
 	pc_epuck->SetControllerType( CONTROLLER_IRI1 );
 	pc_epuck->SetController(pcController);
 

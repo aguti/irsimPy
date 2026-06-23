@@ -23,7 +23,7 @@
 #include "wheelsactuator.h"
 
 /******************** Controllers **************/
-#include "testencodercontroller.h"
+#include "pythonencodercontroller.h"
 
 
 
@@ -146,7 +146,7 @@ void CTestEncoderExp::SetController(CEpuck* pc_epuck)
 	/* Create and add test encoder controller */
 	char pchTemp[128];
 	sprintf(pchTemp, "testencoder");
-	CController* pcController = new CTestEncoderController(pchTemp, pc_epuck);
+	CController* pcController = new CPythonEncoderController(pchTemp, pc_epuck, "python/encoder_controller.py");
 	pc_epuck->SetControllerType( CONTROLLER_TEST_ENCODER );
 	pc_epuck->SetController(pcController);
 }

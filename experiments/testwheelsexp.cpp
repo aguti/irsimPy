@@ -21,7 +21,7 @@
 #include "wheelsactuator.h"
 
 /******************** Controllers **************/
-#include "testwheelscontroller.h"
+#include "pythonwheelscontroller.h"
 
 
 
@@ -118,7 +118,7 @@ void CTestWheelsExp::SetController(CEpuck* pc_epuck)
 	/* Create and add test wheelscontroller */
 	char pchTemp[128];
 	sprintf(pchTemp, "testwheels");
-	CController* pcController = new CTestWheelsController(pchTemp, pc_epuck);
+	CController* pcController = new CPythonWheelsController(pchTemp, pc_epuck, "python/wheels_controller.py");
 	pc_epuck->SetControllerType( CONTROLLER_TEST_WHEELS );
 	pc_epuck->SetController(pcController);
 }

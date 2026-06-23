@@ -21,7 +21,7 @@
 #include "wheelsactuator.h"
 
 /******************** Controllers **************/
-#include "testproxcontroller.h"
+#include "pythonproxcontroller.h"
 
 
 using namespace std;
@@ -122,7 +122,7 @@ void CTestProxExp::SetController(CEpuck* pc_epuck)
 	/* Create and add test light controller */
 	char pchTemp[128];
 	sprintf(pchTemp, "testprox");
-	CController* pcController = new CTestProxController(pchTemp, pc_epuck);
+	CController* pcController = new CPythonProxController(pchTemp, pc_epuck, "python/prox_controller.py");
 	pc_epuck->SetControllerType( CONTROLLER_TEST_PROX );
 	pc_epuck->SetController(pcController);
 }

@@ -21,7 +21,7 @@
 #include "wheelsactuator.h"
 
 /******************** Controllers **************/
-#include "testcontactcontroller.h"
+#include "pythoncontactcontroller.h"
 
 
 using namespace std;
@@ -122,7 +122,7 @@ void CTestContactExp::SetController(CEpuck* pc_epuck)
 	/* Create and add test light controller */
 	char pchTemp[128];
 	sprintf(pchTemp, "testcontact");
-	CController* pcController = new CTestContactController(pchTemp, pc_epuck);
+	CController* pcController = new CPythonContactController(pchTemp, pc_epuck, "python/contact_controller.py");
 	pc_epuck->SetControllerType( CONTROLLER_TEST_CONTACT );
 	pc_epuck->SetController(pcController);
 }

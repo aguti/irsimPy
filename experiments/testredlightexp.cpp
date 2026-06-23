@@ -23,7 +23,7 @@
 #include "wheelsactuator.h"
 
 /******************** Controllers **************/
-#include "testredlightcontroller.h"
+#include "pythonredlightcontroller.h"
 
 
 
@@ -148,7 +148,7 @@ void CTestRedLightExp::SetController(CEpuck* pc_epuck)
 	/* Create and add test red light controller */
 	char pchTemp[128];
 	sprintf(pchTemp, "testredlight");
-	CController* pcController = new CTestRedLightController(pchTemp, pc_epuck);
+	CController* pcController = new CPythonRedLightController(pchTemp, pc_epuck, "python/redlight_controller.py");
 	pc_epuck->SetControllerType( CONTROLLER_TEST_RED_LIGHT );
 	pc_epuck->SetController(pcController);
 }

@@ -24,7 +24,7 @@
 #include "wheelsactuator.h"
 
 /******************** Controllers **************/
-#include "testcompasscontroller.h"
+#include "pythoncompasscontroller.h"
 
 
 
@@ -152,7 +152,7 @@ void CTestCompassExp::SetController(CEpuck* pc_epuck)
 	/* Create and add test encoder controller */
 	char pchTemp[128];
 	sprintf(pchTemp, "testencoder");
-	CController* pcController = new CTestCompassController(pchTemp, pc_epuck);
+	CController* pcController = new CPythonCompassController(pchTemp, pc_epuck, "python/compass_controller.py");
 	pc_epuck->SetControllerType( CONTROLLER_TEST_COMPASS );
 	pc_epuck->SetController(pcController);
 }
