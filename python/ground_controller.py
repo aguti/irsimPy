@@ -1,4 +1,9 @@
 import sys
+import math
+
+INIT_X     = 0.0        # initial x position (metres)
+INIT_Y     = 0.0        # initial y position (metres)
+INIT_THETA = math.pi/4  # initial orientation (radians)
 
 
 def step(step_number, time, step_interval, ground, ground_memory):
@@ -12,7 +17,7 @@ def step(step_number, time, step_interval, ground, ground_memory):
     -------
     (left_speed, right_speed) : floats in [-1000, 1000]
     """
-    print(f"[step {step_number}] Ground: {[f'{v:.2f}' for v in ground]}  Memory: {[f'{v:.2f}' for v in ground_memory]}", file=sys.stderr)
+    print(f"[time {time}] Ground: {[f'{v:.4f}' for v in ground]}  Memory: {[f'{v:.4f}' for v in ground_memory]}", file=sys.stderr)
 
     left_speed  = 200
     right_speed = 200

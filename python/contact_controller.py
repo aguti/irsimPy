@@ -1,5 +1,9 @@
 import sys
 
+INIT_X     = 0.0  # initial x position (metres)
+INIT_Y     = 0.0  # initial y position (metres)
+INIT_THETA = 0.0  # initial orientation (radians)
+
 
 def step(step_number, time, step_interval, contact):
     """
@@ -11,7 +15,7 @@ def step(step_number, time, step_interval, contact):
     -------
     (left_speed, right_speed) : floats in [-1000, 1000]
     """
-    print(f"[step {step_number}] Contact: {[f'{v:.2f}' for v in contact]}", file=sys.stderr)
+    print(f"[time {time}] Contact: {[f'{v:.4f}' for v in contact]}", file=sys.stderr)
 
     left_speed  = 750
     right_speed = 750

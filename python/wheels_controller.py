@@ -1,5 +1,9 @@
 import sys
 
+INIT_X     = 0.5  # initial x position (metres)
+INIT_Y     = 0.5  # initial y position (metres)
+INIT_THETA = 0.0  # initial orientation (radians)
+
 
 def step(step_number, time, step_interval):
     """
@@ -15,8 +19,8 @@ def step(step_number, time, step_interval):
     -------
     (left_speed, right_speed) : floats in [-1000, 1000]
     """
-    left_speed  = -1000
-    right_speed = -1000
+    left_speed  = 1000
+    right_speed = 1000
     return left_speed, right_speed
 
 

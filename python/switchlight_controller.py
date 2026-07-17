@@ -1,5 +1,9 @@
 import sys
 
+INIT_X     = 0.0  # initial x position (metres)
+INIT_Y     = 0.0  # initial y position (metres)
+INIT_THETA = 0.0  # initial orientation (radians)
+
 
 def step(step_number, time, step_interval, light):
     """
@@ -15,7 +19,7 @@ def step(step_number, time, step_interval, light):
         1 = switch nearest light ON
         None = do nothing (omit from return)
     """
-    print(f"[step {step_number}] Light: {[f'{v:.2f}' for v in light]}", file=sys.stderr)
+    print(f"[time {time}] Light: {[f'{v:.4f}' for v in light]}", file=sys.stderr)
 
     total_light = light[0] + light[7]
 

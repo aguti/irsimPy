@@ -101,3 +101,21 @@ void CPythonControllerBase::handleResponse(const char* line)
 
 /******************************************************************************/
 /******************************************************************************/
+
+void CPythonControllerBase::ReadInitPose(const char* pch_script,
+                                          double& x, double& y, double& theta)
+{
+    x = y = theta = 0.0;
+    char cmd[512];
+    snprintf(cmd, sizeof(cmd),
+        "python3 -c \"g={}; exec(open('%s').read(),g); "
+        "print(g.get('INIT_X',0.0), g.get('INIT_Y',0.0), g.get('INIT_THETA',0.0))\" < /dev/null",
+        pch_script);
+    FILE* f = popen(cmd, "r");
+    if (!f) return;
+    fscanf(f, "%lf %lf %lf", &x, &y, &theta);
+    pclose(f);
+}
+
+/******************************************************************************/
+/******************************************************************************/

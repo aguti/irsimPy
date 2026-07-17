@@ -1,5 +1,9 @@
 import sys
 
+INIT_X     = 0.0  # initial x position (metres)
+INIT_Y     = 0.0  # initial y position (metres)
+INIT_THETA = 0.0  # initial orientation (radians)
+
 
 def step(step_number, time, step_interval, encoder, compass):
     """
@@ -12,7 +16,7 @@ def step(step_number, time, step_interval, encoder, compass):
     -------
     (left_speed, right_speed) : floats in [-1000, 1000]
     """
-    print(f"[step {step_number}] Encoder: {[f'{v:.2f}' for v in encoder]}  Compass: {[f'{v:.2f}' for v in compass]}", file=sys.stderr)
+    print(f"[time {time}] Encoder: {[f'{v:.4f}' for v in encoder]}  Compass: {[f'{v:.4f}' for v in compass]}", file=sys.stderr)
 
     left_speed  = 200
     right_speed = -200

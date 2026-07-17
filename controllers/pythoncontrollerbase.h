@@ -23,6 +23,9 @@ public:
     void SimulationStep(unsigned n_step_number, double f_time,
                         double f_step_interval);
 
+    static void ReadInitPose(const char* pch_script,
+                             double& x, double& y, double& theta);
+
 protected:
     /* Subclass appends sensor values to buf (already prefixed with
        "step time interval"). len must be updated accordingly. */

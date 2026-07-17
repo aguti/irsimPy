@@ -61,7 +61,7 @@ def step(step_number, time, step_interval,
     """
 
     # Print all sensor readings to the terminal
-    print(f"[step {step_number:5d} | t={time:.2f}]", file=sys.stderr)
+    print(f"[time {time:.2f}]", file=sys.stderr)
     print(f"  PROX     : {[f'{v:.3f}' for v in prox]}", file=sys.stderr)
     print(f"  LIGHT    : {[f'{v:.3f}' for v in light]}", file=sys.stderr)
     print(f"  BLUELIGHT: {[f'{v:.3f}' for v in bluelight]}", file=sys.stderr)
@@ -75,12 +75,12 @@ def step(step_number, time, step_interval,
     print(f"  POS      : ({pos_x:.3f}, {pos_y:.3f})", file=sys.stderr)
 
     # --- write your controller logic here ---
-    left_speed   = 0
-    right_speed  = 0
+    left_speed   = 100
+    right_speed  = 100
     switch_light = None
     switch_blue  = 0
     switch_red   = None
-    leds         = [LED_GREEN]   # e.g. [LED_RED]*8  or  [-1,-1,-1,LED_GREEN,-1,-1,-1,-1]
+    leds         = [LED_BLACK]   # e.g. [LED_RED]*8  or  [-1,-1,-1,LED_GREEN,-1,-1,-1,-1]
 
     return left_speed, right_speed, switch_light, switch_blue, switch_red, leds
 

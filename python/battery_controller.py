@@ -1,4 +1,9 @@
 import sys
+import math
+
+INIT_X     = 0.0        # initial x position (metres)
+INIT_Y     = 0.0        # initial y position (metres)
+INIT_THETA = math.pi/4  # initial orientation (radians)
 
 
 def step(step_number, time, step_interval, battery):
@@ -11,10 +16,10 @@ def step(step_number, time, step_interval, battery):
     -------
     (left_speed, right_speed) : floats in [-1000, 1000]
     """
-    print(f"[step {step_number}] Battery: {battery[0]:.3f}", file=sys.stderr)
+    print(f"[time {time}] Battery: {battery[0]:.4f}", file=sys.stderr)
 
     # Drive forward when charged, reverse to charger when low
-    if battery[0] < 0.5:
+    if battery[0] < 0.3:
         left_speed, right_speed = -500, -500
     else:
         left_speed, right_speed = 200, 200

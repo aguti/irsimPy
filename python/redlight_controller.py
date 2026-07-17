@@ -1,5 +1,9 @@
 import sys
 
+INIT_X     = 0.5  # initial x position (metres)
+INIT_Y     = 0.5  # initial y position (metres)
+INIT_THETA = 0.0  # initial orientation (radians)
+
 
 def step(step_number, time, step_interval, light):
     """
@@ -11,9 +15,9 @@ def step(step_number, time, step_interval, light):
     -------
     (left_speed, right_speed) : floats in [-1000, 1000]
     """
-    print(f"[step {step_number}] Red light: {[f'{v:.2f}' for v in light]}", file=sys.stderr)
+    print(f"[time {time}] Red light: {[f'{v:.4f}' for v in light]}", file=sys.stderr)
 
-    left_speed  = 250
+    left_speed  = -750
     right_speed = 750
     return left_speed, right_speed
 

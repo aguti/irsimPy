@@ -163,12 +163,13 @@ void CTestSwitchLightExp::SetController(CEpuck* pc_epuck)
 
 void CTestSwitchLightExp::CreateAndAddEpucks(CSimulator* pc_simulator)
 {
-	/* Create and add epucks */
-	char label[100] = "epuck";    
+	double px, py, ptheta;
+	CPythonControllerBase::ReadInitPose("python/switchlight_controller.py", px, py, ptheta);
+	char label[100];
 	for (int i = 0; i < m_nRobotsNumber; i++)
 	{
 		sprintf(label, "epuck%.4d", i);
-		CEpuck* pcEpuck = CreateEpuck(label, 0.0, 0.0, 0.0);
+		CEpuck* pcEpuck = CreateEpuck(label, px, py, ptheta);
 		pc_simulator->AddEpuck(pcEpuck);
 	}
 }
