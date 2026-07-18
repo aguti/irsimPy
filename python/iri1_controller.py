@@ -8,6 +8,39 @@ LED_BLUE   = 3
 LED_YELLOW = 4
 LED_WHITE  = 5
 
+# ============================================================
+# ARENA CONFIGURATION (edit to change the environment)
+# ============================================================
+ARENA_CELLS_X = 20      # grid columns (arena width discretisation)
+ARENA_CELLS_Y = 20      # grid rows    (arena height discretisation)
+ARENA_WIDTH   = 3.0     # arena width  in metres
+ARENA_HEIGHT  = 3.0     # arena height in metres
+
+# Map layout: list of ARENA_CELLS_Y strings, each ARENA_CELLS_X characters.
+# % = wall (obstacle),  # = free space
+ARENA_MAP = [
+    "%%%%%%%%%%%%%%%%%%%%",
+    "%##################%",
+    "%##################%",
+    "%##################%",
+    "%##################%",
+    "%##################%",
+    "%##################%",
+    "%######%%%%########%",
+    "%##################%",
+    "%##################%",
+    "%##################%",
+    "%##################%",
+    "%##################%",
+    "%##################%",
+    "%######%%%%########%",
+    "%##################%",
+    "%##################%",
+    "%##################%",
+    "%##################%",
+    "%%%%%%%%%%%%%%%%%%%%",
+]
+
 # --- sensor sizes (fixed for the e-puck robot) ---
 N_PROX        = 8
 N_LIGHT       = 8
@@ -28,7 +61,7 @@ def step(step_number, time, step_interval,
          contact, ground, ground_memory,
          battery, blue_battery, red_battery,
          encoder, compass,
-         pos_x, pos_y):
+         RobotSim_pos_x, RobotSim_pos_y):
     """
     Called every simulation step. Edit this function to program the robot.
 
@@ -46,7 +79,7 @@ def step(step_number, time, step_interval,
     red_battery   : list of 1 float   -- red battery level
     encoder       : list of 2 floats  -- wheel encoder readings (left, right)
     compass       : list of 1 float   -- compass heading (radians)
-    pos_x, pos_y  : float             -- real robot position (for logging)
+    RobotSim_pos_x, RobotSim_pos_y : float  -- simulator position of the robot
 
     Returns
     -------
@@ -72,7 +105,7 @@ def step(step_number, time, step_interval,
     print(f"  BATTERY  : {battery[0]:.3f}  BLUE: {blue_battery[0]:.3f}  RED: {red_battery[0]:.3f}", file=sys.stderr)
     print(f"  ENCODER  : {[f'{v:.3f}' for v in encoder]}", file=sys.stderr)
     print(f"  COMPASS  : {compass[0]:.3f}", file=sys.stderr)
-    print(f"  POS      : ({pos_x:.3f}, {pos_y:.3f})", file=sys.stderr)
+    print(f"  POS      : ({RobotSim_pos_x:.3f}, {RobotSim_pos_y:.3f})", file=sys.stderr)
 
     # --- write your controller logic here ---
     left_speed   = 100
@@ -115,14 +148,14 @@ for line in sys.stdin:
     red_battery,  idx = _parse(parts, idx, N_REDBATTERY)
     encoder,      idx = _parse(parts, idx, N_ENCODER)
     compass,      idx = _parse(parts, idx, N_COMPASS)
-    pos_x  = float(parts[idx]);     idx += 1
-    pos_y  = float(parts[idx]);     idx += 1
+    RobotSim_pos_x = float(parts[idx]);     idx += 1
+    RobotSim_pos_y = float(parts[idx]);     idx += 1
 
     result = step(step_number, time, step_interval,
                   prox, light, bluelight, redlight,
                   contact, ground, ground_memory,
                   battery, blue_battery, red_battery,
-                  encoder, compass, pos_x, pos_y)
+                  encoder, compass, RobotSim_pos_x, RobotSim_pos_y)
 
     left, right    = result[0], result[1]
     switch_light   = result[2] if len(result) > 2 else None

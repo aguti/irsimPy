@@ -10,6 +10,9 @@
 
 /******************** Simulator ****************/
 #include <vector>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include "simmath.h"
 #include "random.h"
 #include "programmedarena.h"
@@ -39,91 +42,57 @@
 
 using namespace std;
 
-/*Create Arena */
-static const char* pchHeightMap = 
-//"%%%%%%%%%%%%%%%%%%%%"
-//"%############%#####%"
-//"%############%#####%"
-//"%##%%%%%%%%##%##%##%"
-//"%##%######%#####%##%"
-//"%##%######%#####%##%"
-//"%##%##%%%%%%%%%%%##%"
-//"%##%###############%"
-//"%##%###############%"
-//"%##%##%%%%%%%%#####%"
-//"%##%##%######%%%%%%%"
-//"%##%###############%"
-//"%##%#####%%########%"
-//"%##%%%%%%%%%%%#####%"
-//"%##%##%############%"
-//"%##%##%############%"
-//"%##%##%#####%%%%%##%"
-//"%#####%#########%##%"
-//"%#####%#########%##%"
-//"%%%%%%%%%%%%%%%%%%%%";
+/******************************************************************************/
+/******************************************************************************/
 
-"%%%%%%%%%%%%%%%%%%%%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%%%%%%%%%%%%%%%%%%%%";
+void CIri1Exp::ReadArenaConfig(const char* pch_script)
+{
+    /* Write a temporary Python reader script */
+    const char* tmpPath = "/tmp/irsim_arena_reader.py";
+    FILE* fw = fopen(tmpPath, "w");
+    if (!fw) { fprintf(stderr, "[IRI1] Cannot write arena reader\n"); return; }
 
-//"%%%%%%%%%%%%%%%%%%%%"
-//"%##################%"
-//"%##################%"
-//"%##################%"
-//"%##################%"
-//"%##################%"
-//"%##################%"
-//"%##################%"
-//"%%%%%%%%%%%%%%#####%"
-//"%##################%"
-//"%##################%"
-//"%##################%"
-//"%##################%"
-//"%##################%"
-//"%##################%"
-//"%##################%"
-//"%##################%"
-//"%##################%"
-//"%##################%"
-//"%%%%%%%%%%%%%%%%%%%%";
+    fprintf(fw,
+        "g={}\n"
+        "exec(open(\"%s\").read(), g)\n"
+        "print(int(g.get(\"ARENA_CELLS_X\", 20)))\n"
+        "print(int(g.get(\"ARENA_CELLS_Y\", 20)))\n"
+        "print(float(g.get(\"ARENA_WIDTH\",  3.0)))\n"
+        "print(float(g.get(\"ARENA_HEIGHT\", 3.0)))\n"
+        "rows = g.get(\"ARENA_MAP\", [])\n"
+        "print(len(rows))\n"
+        "for r in reversed(rows):\n"
+        "    print(r)\n",
+        pch_script);
+    fclose(fw);
 
-//"%%%%%%%%%%%%%%%%%%%%"
-//"%##################%"
-//"%######%%%#########%"
-//"%##################%"
-//"%##################%"
-//"%##################%"
-//"%############%%%###%"
-//"%##################%"
-//"%##%%%%############%"
-//"%##################%"
-//"%##################%"
-//"%##########%%%%%###%"
-//"%##################%"
-//"%##################%"
-//"%##################%"
-//"%##################%"
-//"%###%%%#####%%%%###%"
-//"%##################%"
-//"%##################%"
-//"%%%%%%%%%%%%%%%%%%%%";
+    char cmd[256];
+    snprintf(cmd, sizeof(cmd), "python3 %s < /dev/null", tmpPath);
+    FILE* f = popen(cmd, "r");
+    if (!f) { fprintf(stderr, "[IRI1] Cannot run arena reader\n"); return; }
+
+    char line[512];
+
+    /* Arena dimensions */
+    fgets(line, sizeof(line), f); m_nArenaCellsX = atoi(line);
+    fgets(line, sizeof(line), f); m_nArenaCellsY = atoi(line);
+    fgets(line, sizeof(line), f); m_fArenaWidth  = atof(line);
+    fgets(line, sizeof(line), f); m_fArenaHeight = atof(line);
+
+    /* Map rows — concatenate into one flat string */
+    fgets(line, sizeof(line), f); int nRows = atoi(line);
+    m_pchHeightMap = new char[nRows * m_nArenaCellsX + 1];
+    m_pchHeightMap[0] = '\0';
+    char rowBuf[256];
+    for (int i = 0; i < nRows; i++) {
+        fgets(rowBuf, sizeof(rowBuf), f);
+        int len = strlen(rowBuf);
+        while (len > 0 && (rowBuf[len-1] == '\n' || rowBuf[len-1] == '\r')) rowBuf[--len] = '\0';
+        strncat(m_pchHeightMap, rowBuf, m_nArenaCellsX);
+    }
+
+    pclose(f);
+}
 extern gsl_rng* rng;
 extern long int rngSeed;
 
@@ -136,8 +105,11 @@ CIri1Exp::CIri1Exp(const char* pch_name, const char* paramsFile) :
 
 	m_fLightSensorRange = 1.0; //1 meter
 	m_fBlueLightSensorRange = 1.0; //1 meter
-	
-	/* If there is not a parameter file input get default values*/
+
+	/* Arena layout always comes from the Python file */
+	ReadArenaConfig("python/iri1_controller.py");
+
+	/* If there is not a parameter file, use defaults for everything else */
 	if (paramsFile == NULL )
 	{
 		m_nRobotsNumber = 1;
@@ -146,26 +118,25 @@ CIri1Exp::CIri1Exp(const char* pch_name, const char* paramsFile) :
 		m_fRobotOrientations = new double[m_nRobotsNumber];
 		for ( int i = 0 ; i < m_nRobotsNumber ; i++)
 		{
-			m_pcvRobotPositions[i].x 	= 0.0;
-			m_pcvRobotPositions[i].y 	= 0.0;
-			m_fRobotOrientations[i] 	= 0.0;
+			m_pcvRobotPositions[i].x = 0.0;
+			m_pcvRobotPositions[i].y = 0.0;
+			m_fRobotOrientations[i]  = 0.0;
 		}
 		m_nRunTime = 10000;
 
-
-		m_nLightObjectNumber = 0;
-		m_pcvLightObjects = new dVector2[m_nLightObjectNumber];
-	
-		m_nBlueLightObjectNumber = 0;
-		m_pcvBlueLightObjects = new dVector2[m_nBlueLightObjectNumber];
-		
-		m_nNumberOfGroundArea = 0;
-		m_vGroundAreaCenter = new dVector2[m_nNumberOfGroundArea];
-		m_fGroundAreaExternalRadius = new double[m_nNumberOfGroundArea];
-		m_fGroundAreaInternalRadius = new double[m_nNumberOfGroundArea];
-		m_fGroundAreaColor = new double[m_nNumberOfGroundArea];
+		m_nLightObjectNumber      = 0;
+		m_pcvLightObjects         = new dVector2[1];
+		m_nBlueLightObjectNumber  = 0;
+		m_pcvBlueLightObjects     = new dVector2[1];
+		m_nRedLightObjectNumber   = 0;
+		m_pcvRedLightObjects      = new dVector2[1];
+		m_nNumberOfGroundArea     = 0;
+		m_vGroundAreaCenter       = new dVector2[1];
+		m_fGroundAreaExternalRadius = new double[1];
+		m_fGroundAreaInternalRadius = new double[1];
+		m_fGroundAreaColor          = new double[1];
 	}
-	/* Else, extract info from the file */
+	/* Else, extract robot/sensor/light config from the param file */
 	else
 	{
 		ifstream pfile(paramsFile);
@@ -291,6 +262,7 @@ CIri1Exp::CIri1Exp(const char* pch_name, const char* paramsFile) :
 
 CIri1Exp::~CIri1Exp ( void )
 {
+	delete [] m_pchHeightMap;
 	delete [] m_pcvLightObjects;
 	delete [] m_pcvBlueLightObjects;
 	delete [] m_pcvRedLightObjects;
@@ -307,8 +279,8 @@ CArena* CIri1Exp::CreateArena()
 
 	/* Create Arena */
 	CArena* pcArena = NULL;
-	pcArena = new CProgrammedArena("CProgrammedArena", 20, 20, 3.0, 3.0);
-	((CProgrammedArena*)pcArena)->SetHeightPixelsFromChars(pchHeightMap, ' ', '#', '%');
+	pcArena = new CProgrammedArena("CProgrammedArena", m_nArenaCellsX, m_nArenaCellsY, m_fArenaWidth, m_fArenaHeight);
+	((CProgrammedArena*)pcArena)->SetHeightPixelsFromChars(m_pchHeightMap, ' ', '#', '%');
 
 	/* Create and add Light Object */
 	char pchTemp[128];

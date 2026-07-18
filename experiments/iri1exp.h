@@ -25,6 +25,15 @@ protected:
 private:
 
 		/* VARIABLES*/
+		/* Arena layout (read from Python) */
+		int    m_nArenaCellsX;
+		int    m_nArenaCellsY;
+		double m_fArenaWidth;
+		double m_fArenaHeight;
+		char*  m_pchHeightMap;
+
+		void ReadArenaConfig(const char* pch_script);
+
 		/* Extra */
 		int m_nRobotsNumber;
 		int m_nWriteToFile;
