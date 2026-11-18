@@ -1,3 +1,238 @@
+irsimPy
+=======
+
+irsimPy is the IRSIM e-puck robot simulator (C++) with a Python bridge: the
+robot controllers of the test experiments (1-11) and of IRI1 (30) are written
+in Python, so you can program the robot without touching or recompiling C++.
+
+This README has two parts:
+
+  PART 1 - PYTHON   how to run experiments and program robots in Python
+  PART 2 - C++      the simulator itself: dependencies, compilation, C++
+                    experiments and the original IRSIM documentation
+
+The simulator (C++) must be compiled once before using the Python part
+(see PART 2, "Installation").
+
+
+################################################################################
+PART 1 - PYTHON
+################################################################################
+
+How it works
+------------
+
+The simulator launches your Python controller as a child process. Every
+simulation step it sends the sensor readings to the controller through stdin,
+and reads back the actuator commands (wheel speeds, lights, LEDs) from stdout.
+
+Editing a Python controller does NOT require recompiling: save the file and
+run the simulator again.
+
+
+Running experiments from Python
+-------------------------------
+
+Always run from the root folder of irsimPy (controllers are found through
+relative paths such as python/iri1_controller.py).
+
+  python3 python/simulator.py -E                  # list experiments
+  python3 python/simulator.py -E 1                # run experiment 1
+  python3 python/simulator.py -E 30 -p paramFiles/iri2Param.txt
+
+Options (same as ./irsim):
+
+  -E <id>     experiment to run (without <id>: list experiments)
+  -p <file>   parameter file
+  -s <seed>   random seed
+  -v          no graphical window (headless)
+  -e          evolutionary mode
+  -c <file>   chromosome file
+  -f          save frames to disk
+
+simulator.py can also be used from Python code:
+
+  from python.simulator import Simulator
+  Simulator(experiment=30, param_file="paramFiles/iri2Param.txt").run()
+
+
+Experiments with Python controllers
+-----------------------------------
+
+  ID  Experiment             Python controller                 step() receives
+  --  ---------------------  --------------------------------  -------------------------------
+   1  Test Wheels            python/wheels_controller.py       -
+   2  Test Contact Sensor    python/contact_controller.py      contact (8)
+   3  Test Proximity Sensor  python/prox_controller.py         prox (8)
+   4  Test Light Sensor      python/light_controller.py        light (8)
+   5  Test Blue Light        python/bluelight_controller.py    light (8)
+   6  Test Red Light         python/redlight_controller.py     light (8)
+   7  Test Switch Light      python/switchlight_controller.py  light (8)
+   8  Test Ground Sensor     python/ground_controller.py       ground (3), ground_memory (1)
+   9  Test Battery Sensor    python/battery_controller.py      battery (1)
+  10  Test Encoder Sensor    python/encoder_controller.py      encoder (2), RobotSim_pos_x/y
+  11  Test Compass Sensor    python/compass_controller.py      encoder (2), compass (1)
+  30  IRI1                   python/iri1_controller.py         all sensors (see below)
+
+
+Writing a controller
+--------------------
+
+Every controller has the same structure:
+
+  * Configuration constants at the top (initial pose, arena, ...).
+  * A step(...) function, called once per simulation step. This is the only
+    part you normally edit.
+  * A communication loop at the bottom, marked
+        # --- communication loop (do not edit below this line) ---
+    Do not modify it.
+
+Common step() arguments:
+
+  step_number    int    simulation step
+  time           float  simulation time (seconds)
+  step_interval  float  duration of one step (seconds)
+
+Return values:
+
+  * Experiments 1-6 and 8-11:  return left_speed, right_speed
+      speeds in [-1000, 1000]
+  * Experiment 7 (switch light):  return left_speed, right_speed, switch_cmd
+      switch_cmd: 1 = switch nearest light ON, 0 = OFF, None = no action
+  * Experiment 30 (IRI1):
+      return left_speed, right_speed, switch_light, switch_blue, switch_red, leds
+      switch_*: 1 = ON, 0 = OFF, None = no action (nearest light of that color)
+      leds:     None (no change), a single value [LED_RED] applied to all 8
+                LEDs, or a list of 8 values. Values: LED_BLACK, LED_RED,
+                LED_GREEN, LED_BLUE, LED_YELLOW, LED_WHITE, or -1 (no change).
+
+Printing / debugging: stdout is used to talk to the simulator, so ALWAYS print
+your own messages to stderr:
+
+  print(f"[time {time:.4f}] prox: {prox}", file=sys.stderr)
+
+Printing to stdout breaks the communication with the simulator.
+
+Sensor ranges (e-puck):
+
+  prox       8 values, 0 = nothing near .. 1 = very close
+  light      8 values, 0 = dark .. 1 = bright (also blue and red light)
+  contact    8 values, 0 = free, 1 = contact
+  ground     3 values, 0 = black .. 1 = white
+  battery    1 value,  0 = empty .. 1 = full
+  encoder    2 values, left and right wheel
+  compass    1 value,  heading in radians
+  RobotSim_pos_x, RobotSim_pos_y
+             robot position given by the simulator (ground truth, metres).
+             A real robot does not have this information.
+
+
+Initial position (experiments 1-11)
+-----------------------------------
+
+The initial pose of the robot is set at the top of each test controller:
+
+  INIT_X     = 0.0   # metres
+  INIT_Y     = 0.0   # metres
+  INIT_THETA = 0.0   # radians
+
+The arena is 3 x 3 m centred at (0, 0), so x and y go from -1.5 to 1.5.
+
+
+IRI1 (experiment 30)
+--------------------
+
+python/iri1_controller.py receives all the sensors:
+
+  step(step_number, time, step_interval,
+       prox, light, bluelight, redlight,
+       contact, ground, ground_memory,
+       battery, blue_battery, red_battery,
+       encoder, compass,
+       RobotSim_pos_x, RobotSim_pos_y)
+
+Arena (walls and obstacles) is defined in the same Python file and is always
+used, with or without parameter file:
+
+  ARENA_CELLS_X = 20      # grid columns
+  ARENA_CELLS_Y = 20      # grid rows
+  ARENA_WIDTH   = 3.0     # metres
+  ARENA_HEIGHT  = 3.0     # metres
+  ARENA_MAP = [
+      "%%%%%%%%%%%%%%%%%%%%",
+      "%##################%",
+      ...
+      "%%%%%%%%%%%%%%%%%%%%",
+  ]
+
+  * '%' = wall, '#' = free space.
+  * ARENA_MAP must have ARENA_CELLS_Y strings of ARENA_CELLS_X characters.
+  * The map is drawn as seen on screen: the first string is the top row of
+    the arena.
+
+Everything else comes from the parameter file (paramFiles/iri1Param.txt,
+iri2Param.txt, iri3Param.txt):
+
+  * number of robots, initial position and orientation, run time,
+    write to file
+  * light, blue light and red light positions
+  * ground areas (position, radius, color)
+  * sensor ranges
+
+Without a parameter file, IRI1 uses one robot at (0, 0) with orientation 0,
+no lights and no ground areas.
+
+
+Troubleshooting (Python)
+------------------------
+
+  * The simulator hangs or the window never opens: check that your
+    controller does not print to stdout and does not read stdin outside the
+    communication loop.
+  * "Simulator binary not found": compile first (see PART 2, "Installation").
+  * Controller not found: run the simulator from the irsimPy root folder.
+  * Python errors in your controller are shown in the terminal (stderr).
+
+
+################################################################################
+PART 2 - C++
+################################################################################
+
+Folder layout
+-------------
+
+  experiments/      C++ experiments (arena, robots, objects); the experiments
+                    with Python controllers call python/*_controller.py
+  controllers/      C++ controllers, including the Python bridge
+  sensors/, actuators/, arenas/, objects/, graphics/, ...
+                    simulator core
+  paramFiles/       parameter files for the experiments
+  outputFiles/      files written by the experiments
+  python/           Python controllers (PART 1)
+  claudeCodeConversations/  development history of irsimPy
+
+Any change in a .cpp/.h file requires recompiling with make.
+
+
+C++ experiments
+---------------
+
+These experiments still use the original C++ controllers (in controllers/):
+
+  20  Braitenberg Vehicle 2
+  21  Neuron Experiment
+  22  Subsumption Light
+  23  Subsumption Garbage
+  24  CTRNN Experiment
+  31  IRI2
+  32  IRI3
+
+Run them with ./irsim -E <id> (see "Run Experiments" below).
+
+
+Original IRSIM README
+---------------------
+
 README:
 ------
 
