@@ -46,6 +46,7 @@ private:
     CEncoderSensor*        m_seEncoder;
     CCompassSensor*        m_seCompass;
 
+protected:
     int m_nWriteToFile;
 };
 

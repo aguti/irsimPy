@@ -58,54 +58,54 @@ void CPythonIri1Controller::appendSensorData(char* buf, int& len)
 
     double* prox = m_seProx->GetSensorReading(m_pcEpuck);
     for (i = 0; i < m_seProx->GetNumberOfInputs(); i++)
-        len += snprintf(buf + len, 4096 - len, " %f", prox[i]);
+        len += snprintf(buf + len, 4096 - len, " %.17g", prox[i]);
 
     double* light = m_seLight->GetSensorReading(m_pcEpuck);
     for (i = 0; i < m_seLight->GetNumberOfInputs(); i++)
-        len += snprintf(buf + len, 4096 - len, " %f", light[i]);
+        len += snprintf(buf + len, 4096 - len, " %.17g", light[i]);
 
     double* bluelight = m_seBlueLight->GetSensorReading(m_pcEpuck);
     for (i = 0; i < m_seBlueLight->GetNumberOfInputs(); i++)
-        len += snprintf(buf + len, 4096 - len, " %f", bluelight[i]);
+        len += snprintf(buf + len, 4096 - len, " %.17g", bluelight[i]);
 
     double* redlight = m_seRedLight->GetSensorReading(m_pcEpuck);
     for (i = 0; i < m_seRedLight->GetNumberOfInputs(); i++)
-        len += snprintf(buf + len, 4096 - len, " %f", redlight[i]);
+        len += snprintf(buf + len, 4096 - len, " %.17g", redlight[i]);
 
     double* contact = m_seContact->GetSensorReading(m_pcEpuck);
     for (i = 0; i < m_seContact->GetNumberOfInputs(); i++)
-        len += snprintf(buf + len, 4096 - len, " %f", contact[i]);
+        len += snprintf(buf + len, 4096 - len, " %.17g", contact[i]);
 
     double* ground = m_seGround->GetSensorReading(m_pcEpuck);
     for (i = 0; i < m_seGround->GetNumberOfInputs(); i++)
-        len += snprintf(buf + len, 4096 - len, " %f", ground[i]);
+        len += snprintf(buf + len, 4096 - len, " %.17g", ground[i]);
 
     double* gmem = m_seGroundMemory->GetSensorReading(m_pcEpuck);
     for (i = 0; i < m_seGroundMemory->GetNumberOfInputs(); i++)
-        len += snprintf(buf + len, 4096 - len, " %f", gmem[i]);
+        len += snprintf(buf + len, 4096 - len, " %.17g", gmem[i]);
 
     double* battery = m_seBattery->GetSensorReading(m_pcEpuck);
     for (i = 0; i < m_seBattery->GetNumberOfInputs(); i++)
-        len += snprintf(buf + len, 4096 - len, " %f", battery[i]);
+        len += snprintf(buf + len, 4096 - len, " %.17g", battery[i]);
 
     double* bluebattery = m_seBlueBattery->GetSensorReading(m_pcEpuck);
     for (i = 0; i < m_seBlueBattery->GetNumberOfInputs(); i++)
-        len += snprintf(buf + len, 4096 - len, " %f", bluebattery[i]);
+        len += snprintf(buf + len, 4096 - len, " %.17g", bluebattery[i]);
 
     double* redbattery = m_seRedBattery->GetSensorReading(m_pcEpuck);
     for (i = 0; i < m_seRedBattery->GetNumberOfInputs(); i++)
-        len += snprintf(buf + len, 4096 - len, " %f", redbattery[i]);
+        len += snprintf(buf + len, 4096 - len, " %.17g", redbattery[i]);
 
     double* encoder = m_seEncoder->GetSensorReading(m_pcEpuck);
     for (i = 0; i < m_seEncoder->GetNumberOfInputs(); i++)
-        len += snprintf(buf + len, 4096 - len, " %f", encoder[i]);
+        len += snprintf(buf + len, 4096 - len, " %.17g", encoder[i]);
 
     double* compass = m_seCompass->GetSensorReading(m_pcEpuck);
     for (i = 0; i < m_seCompass->GetNumberOfInputs(); i++)
-        len += snprintf(buf + len, 4096 - len, " %f", compass[i]);
+        len += snprintf(buf + len, 4096 - len, " %.17g", compass[i]);
 
     /* Robot position (useful for logging on the Python side) */
-    len += snprintf(buf + len, 4096 - len, " %f %f",
+    len += snprintf(buf + len, 4096 - len, " %.17g %.17g",
                     m_pcEpuck->GetPosition().x,
                     m_pcEpuck->GetPosition().y);
 }

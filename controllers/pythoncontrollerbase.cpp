@@ -4,6 +4,7 @@
 
 #include <cstdio>
 #include <cstring>
+#include <cstdlib>
 #include <unistd.h>
 #include <signal.h>
 #include <iostream>
@@ -115,6 +116,67 @@ void CPythonControllerBase::ReadInitPose(const char* pch_script,
     if (!f) return;
     fscanf(f, "%lf %lf %lf", &x, &y, &theta);
     pclose(f);
+}
+
+/******************************************************************************/
+/******************************************************************************/
+
+char* CPythonControllerBase::ReadArenaConfig(const char* pch_script,
+                                              int& n_cells_x, int& n_cells_y,
+                                              double& f_width, double& f_height)
+{
+    n_cells_x = n_cells_y = 20;
+    f_width = f_height = 3.0;
+
+    /* Write a temporary Python reader script (one per process, so several
+       simulators can start at the same time) */
+    char tmpPath[64];
+    snprintf(tmpPath, sizeof(tmpPath), "/tmp/irsim_arena_reader_%d.py", (int) getpid());
+    FILE* fw = fopen(tmpPath, "w");
+    if (!fw) { fprintf(stderr, "[PythonController] Cannot write arena reader\n"); return NULL; }
+
+    fprintf(fw,
+        "g={}\n"
+        "exec(open(\"%s\").read(), g)\n"
+        "print(int(g.get(\"ARENA_CELLS_X\", 20)))\n"
+        "print(int(g.get(\"ARENA_CELLS_Y\", 20)))\n"
+        "print(float(g.get(\"ARENA_WIDTH\",  3.0)))\n"
+        "print(float(g.get(\"ARENA_HEIGHT\", 3.0)))\n"
+        "rows = g.get(\"ARENA_MAP\", [])\n"
+        "print(len(rows))\n"
+        "for r in reversed(rows):\n"
+        "    print(r)\n",
+        pch_script);
+    fclose(fw);
+
+    char cmd[256];
+    snprintf(cmd, sizeof(cmd), "python3 %s < /dev/null", tmpPath);
+    FILE* f = popen(cmd, "r");
+    if (!f) { fprintf(stderr, "[PythonController] Cannot run arena reader\n"); return NULL; }
+
+    char line[512];
+
+    /* Arena dimensions */
+    fgets(line, sizeof(line), f); n_cells_x = atoi(line);
+    fgets(line, sizeof(line), f); n_cells_y = atoi(line);
+    fgets(line, sizeof(line), f); f_width = atof(line);
+    fgets(line, sizeof(line), f); f_height = atof(line);
+
+    /* Map rows — concatenate into one flat string */
+    fgets(line, sizeof(line), f); int nRows = atoi(line);
+    char* pchMap = new char[nRows * n_cells_x + 1];
+    pchMap[0] = '\0';
+    char rowBuf[256];
+    for (int i = 0; i < nRows; i++) {
+        fgets(rowBuf, sizeof(rowBuf), f);
+        int len = strlen(rowBuf);
+        while (len > 0 && (rowBuf[len-1] == '\n' || rowBuf[len-1] == '\r')) rowBuf[--len] = '\0';
+        strncat(pchMap, rowBuf, n_cells_x);
+    }
+
+    pclose(f);
+    unlink(tmpPath);
+    return pchMap;
 }
 
 /******************************************************************************/

@@ -32,7 +32,6 @@ private:
 		double m_fArenaHeight;
 		char*  m_pchHeightMap;
 
-		void ReadArenaConfig(const char* pch_script);
 
 		/* Extra */
 		int m_nRobotsNumber;

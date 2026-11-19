@@ -2,8 +2,8 @@ irsimPy
 =======
 
 irsimPy is the IRSIM e-puck robot simulator (C++) with a Python bridge: the
-robot controllers of the test experiments (1-11) and of IRI1 (30) are written
-in Python, so you can program the robot without touching or recompiling C++.
+robot controllers of the test experiments (1-11), the subsumption experiments
+(22, 23) and IRI1 (30) are written in Python, so you can program the robot without touching or recompiling C++.
 
 This README has two parts:
 
@@ -72,6 +72,8 @@ Experiments with Python controllers
    9  Test Battery Sensor    python/battery_controller.py      battery (1)
   10  Test Encoder Sensor    python/encoder_controller.py      encoder (2), RobotSim_pos_x/y
   11  Test Compass Sensor    python/compass_controller.py      encoder (2), compass (1)
+  22  Subsumption Light      python/subsumption_light_controller.py    all sensors (see below)
+  23  Subsumption Garbage    python/subsumption_garbage_controller.py  all sensors (see below)
   30  IRI1                   python/iri1_controller.py         all sensors (see below)
 
 
@@ -99,7 +101,7 @@ Return values:
       speeds in [-1000, 1000]
   * Experiment 7 (switch light):  return left_speed, right_speed, switch_cmd
       switch_cmd: 1 = switch nearest light ON, 0 = OFF, None = no action
-  * Experiment 30 (IRI1):
+  * Experiments 22, 23 (subsumption) and 30 (IRI1):
       return left_speed, right_speed, switch_light, switch_blue, switch_red, leds
       switch_*: 1 = ON, 0 = OFF, None = no action (nearest light of that color)
       leds:     None (no change), a single value [LED_RED] applied to all 8
@@ -183,6 +185,37 @@ Without a parameter file, IRI1 uses one robot at (0, 0) with orientation 0,
 no lights and no ground areas.
 
 
+Subsumption (experiments 22 and 23)
+-----------------------------------
+
+Python versions of the C++ subsumption controllers, with the same behaviors,
+thresholds and output files. They use the same param files as the C++ version:
+
+  python3 python/simulator.py -E 22 -p paramFiles/subExamples/paramFileSubsumptionLight.txt
+  python3 python/simulator.py -E 23 -p paramFiles/subExamples/paramFileSubsumptionGarbage.txt
+
+  (or ./irsim with the same arguments)
+
+Levels of competence (0 = highest priority):
+
+  22 Light:    0 ObstacleAvoidance, 1 GoLoad, 2 Navigate
+  23 Garbage:  0 ObstacleAvoidance, 1 GoLoad, 2 Forage, 3 Navigate
+               (GoLoad inhibits Forage while the battery is low)
+
+Each behavior writes [left_speed, right_speed, active] in activation_table,
+and the coordinator selects the active behavior with the highest priority.
+LEDs: GREEN avoiding, RED low battery, BLUE carrying a puck (Forage).
+
+step() receives the same sensors as IRI1 plus RobotSim_orientation (radians).
+
+The arena map (ARENA_*) is at the top of each Python file, as in IRI1. The
+rest (robots, lights, ground areas, sensors, WRITE TO FILE) comes from the
+param file. With WRITE TO FILE = 1 the controllers append to outputFiles/:
+avoidOutput, batteryOutput, forageOutput (23), navigateOutput,
+coordinatorOutput, robotPosition and robotWheels, in the same format as the
+C++ controllers.
+
+
 Troubleshooting (Python)
 ------------------------
 
@@ -221,8 +254,6 @@ These experiments still use the original C++ controllers (in controllers/):
 
   20  Braitenberg Vehicle 2
   21  Neuron Experiment
-  22  Subsumption Light
-  23  Subsumption Garbage
   24  CTRNN Experiment
   31  IRI2
   32  IRI3

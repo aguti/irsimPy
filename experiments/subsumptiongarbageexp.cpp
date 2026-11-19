@@ -35,54 +35,9 @@
 #include "wheelsactuator.h"
 
 /******************** Controllers **************/
-#include "subsumptiongarbagecontroller.h"
+#include "pythonsubsumptioncontroller.h"
 
 using namespace std;
-
-/*Create Arena */
-static const char* pchHeightMap = 
-"%%%%%%%%%%%%%%%%%%%%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%%%%%%%%%%%%%%%%%%%%";
-
-//"%%%%%%%%%%%%%%%%%%%%"
-//"%##################%"
-//"%##################%"
-//"%##########%#######%"
-//"%##########%#######%"
-//"%#%%%######%#######%"
-//"%############%%%###%"
-//"%##################%"
-//"%##########%#######%"
-//"%###########%%%%%##%"
-//"%##################%"
-//"%%%%%%#############%"
-//"%##################%"
-//"%##################%"
-//"%#####%%###########%"
-//"%#####%%###########%"
-//"%#####%%%%%########%"
-//"%##################%"
-//"%##################%"
-//"%%%%%%%%%%%%%%%%%%%%";
-
 
 extern gsl_rng* rng;
 extern long int rngSeed;
@@ -93,6 +48,9 @@ extern long int rngSeed;
 CSubsumptionGarbageExp::CSubsumptionGarbageExp(const char* pch_name, const char* paramsFile) :
 	CExperiment(pch_name, COLLISION_MODEL_SIMPLE, COLLISION_HANDLER_POSITION)
 {
+	/* Arena layout always comes from the Python file */
+	m_pchHeightMap = CPythonControllerBase::ReadArenaConfig("python/subsumption_garbage_controller.py",
+		m_nArenaCellsX, m_nArenaCellsY, m_fArenaWidth, m_fArenaHeight);
 	
 	/* If there is not a parameter file input get default values*/
 	if (paramsFile == NULL )
@@ -108,6 +66,10 @@ CSubsumptionGarbageExp::CSubsumptionGarbageExp(const char* pch_name, const char*
 			m_fRobotOrientations[i] 	= 0.0;
 		}
 		m_nRunTime = 10000;
+		m_nWriteToFile = 0;
+
+		m_nRedLightObjectNumber = 0;
+		m_pcvRedLightObjects = new dVector2[m_nRedLightObjectNumber];
 
 
 		m_nLightObjectNumber = 0;
@@ -253,6 +215,7 @@ CSubsumptionGarbageExp::~CSubsumptionGarbageExp ( void )
 	delete [] m_fGroundAreaExternalRadius;
 	delete [] m_fGroundAreaInternalRadius;
 	delete [] m_fGroundAreaColor;
+	delete [] m_pchHeightMap;
 }
 
 	/******************************************************************************/
@@ -261,8 +224,8 @@ CArena* CSubsumptionGarbageExp::CreateArena()
 {
 	/* Create Arena */
 	CArena* pcArena = NULL;
-	pcArena = new CProgrammedArena("CProgrammedArena", 20, 20, 3.0, 3.0);
-	((CProgrammedArena*)pcArena)->SetHeightPixelsFromChars(pchHeightMap, ' ', '#', '%');
+	pcArena = new CProgrammedArena("CProgrammedArena", m_nArenaCellsX, m_nArenaCellsY, m_fArenaWidth, m_fArenaHeight);
+	((CProgrammedArena*)pcArena)->SetHeightPixelsFromChars(m_pchHeightMap, ' ', '#', '%');
 
 	/* Create and add Light Object */
 	char pchTemp[128];
@@ -397,7 +360,7 @@ void CSubsumptionGarbageExp::SetController(CEpuck* pc_epuck)
 {
 	char pchTemp[128];
 	sprintf(pchTemp, "Iri1");
-	CController* pcController = new CSubsumptionGarbageController(pchTemp, pc_epuck, m_nWriteToFile);
+	CController* pcController = new CPythonSubsumptionController(pchTemp, pc_epuck, "python/subsumption_garbage_controller.py", m_nWriteToFile);
 	pc_epuck->SetControllerType( CONTROLLER_SUBSUMPTION_GARBAGE );
 	pc_epuck->SetController(pcController);
 

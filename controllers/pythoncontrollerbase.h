@@ -26,6 +26,12 @@ public:
     static void ReadInitPose(const char* pch_script,
                              double& x, double& y, double& theta);
 
+    /* Reads ARENA_CELLS_X/Y, ARENA_WIDTH/HEIGHT and ARENA_MAP from the
+       script. Returns the map as a flat string (caller deletes it). */
+    static char* ReadArenaConfig(const char* pch_script,
+                                 int& n_cells_x, int& n_cells_y,
+                                 double& f_width, double& f_height);
+
 protected:
     /* Subclass appends sensor values to buf (already prefixed with
        "step time interval"). len must be updated accordingly. */

@@ -10,9 +10,6 @@
 
 /******************** Simulator ****************/
 #include <vector>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
 #include "simmath.h"
 #include "random.h"
 #include "programmedarena.h"
@@ -45,54 +42,6 @@ using namespace std;
 /******************************************************************************/
 /******************************************************************************/
 
-void CIri1Exp::ReadArenaConfig(const char* pch_script)
-{
-    /* Write a temporary Python reader script */
-    const char* tmpPath = "/tmp/irsim_arena_reader.py";
-    FILE* fw = fopen(tmpPath, "w");
-    if (!fw) { fprintf(stderr, "[IRI1] Cannot write arena reader\n"); return; }
-
-    fprintf(fw,
-        "g={}\n"
-        "exec(open(\"%s\").read(), g)\n"
-        "print(int(g.get(\"ARENA_CELLS_X\", 20)))\n"
-        "print(int(g.get(\"ARENA_CELLS_Y\", 20)))\n"
-        "print(float(g.get(\"ARENA_WIDTH\",  3.0)))\n"
-        "print(float(g.get(\"ARENA_HEIGHT\", 3.0)))\n"
-        "rows = g.get(\"ARENA_MAP\", [])\n"
-        "print(len(rows))\n"
-        "for r in reversed(rows):\n"
-        "    print(r)\n",
-        pch_script);
-    fclose(fw);
-
-    char cmd[256];
-    snprintf(cmd, sizeof(cmd), "python3 %s < /dev/null", tmpPath);
-    FILE* f = popen(cmd, "r");
-    if (!f) { fprintf(stderr, "[IRI1] Cannot run arena reader\n"); return; }
-
-    char line[512];
-
-    /* Arena dimensions */
-    fgets(line, sizeof(line), f); m_nArenaCellsX = atoi(line);
-    fgets(line, sizeof(line), f); m_nArenaCellsY = atoi(line);
-    fgets(line, sizeof(line), f); m_fArenaWidth  = atof(line);
-    fgets(line, sizeof(line), f); m_fArenaHeight = atof(line);
-
-    /* Map rows — concatenate into one flat string */
-    fgets(line, sizeof(line), f); int nRows = atoi(line);
-    m_pchHeightMap = new char[nRows * m_nArenaCellsX + 1];
-    m_pchHeightMap[0] = '\0';
-    char rowBuf[256];
-    for (int i = 0; i < nRows; i++) {
-        fgets(rowBuf, sizeof(rowBuf), f);
-        int len = strlen(rowBuf);
-        while (len > 0 && (rowBuf[len-1] == '\n' || rowBuf[len-1] == '\r')) rowBuf[--len] = '\0';
-        strncat(m_pchHeightMap, rowBuf, m_nArenaCellsX);
-    }
-
-    pclose(f);
-}
 extern gsl_rng* rng;
 extern long int rngSeed;
 
@@ -107,7 +56,8 @@ CIri1Exp::CIri1Exp(const char* pch_name, const char* paramsFile) :
 	m_fBlueLightSensorRange = 1.0; //1 meter
 
 	/* Arena layout always comes from the Python file */
-	ReadArenaConfig("python/iri1_controller.py");
+	m_pchHeightMap = CPythonControllerBase::ReadArenaConfig("python/iri1_controller.py",
+		m_nArenaCellsX, m_nArenaCellsY, m_fArenaWidth, m_fArenaHeight);
 
 	/* If there is not a parameter file, use defaults for everything else */
 	if (paramsFile == NULL )
