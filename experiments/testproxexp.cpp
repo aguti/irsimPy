@@ -21,7 +21,11 @@
 #include "wheelsactuator.h"
 
 /******************** Controllers **************/
+#include "testproxcontroller.h"
 #include "pythonproxcontroller.h"
+
+/* -P flag: use the Python controller instead of the C++ one */
+extern bool g_bPythonMode;
 
 
 using namespace std;
@@ -122,7 +126,11 @@ void CTestProxExp::SetController(CEpuck* pc_epuck)
 	/* Create and add test light controller */
 	char pchTemp[128];
 	sprintf(pchTemp, "testprox");
-	CController* pcController = new CPythonProxController(pchTemp, pc_epuck, "python/prox_controller.py");
+	CController* pcController = NULL;
+	if (g_bPythonMode)
+		pcController = new CPythonProxController(pchTemp, pc_epuck, "python/prox_controller.py");
+	else
+		pcController = new CTestProxController(pchTemp, pc_epuck);
 	pc_epuck->SetControllerType( CONTROLLER_TEST_PROX );
 	pc_epuck->SetController(pcController);
 }
@@ -132,8 +140,10 @@ void CTestProxExp::SetController(CEpuck* pc_epuck)
 
 void CTestProxExp::CreateAndAddEpucks(CSimulator* pc_simulator)
 {
-	double px, py, ptheta;
-	CPythonControllerBase::ReadInitPose("python/prox_controller.py", px, py, ptheta);
+	/* Initial pose: from the Python file in Python mode, the original one otherwise */
+	double px = 0.0, py = 1.2, ptheta = 1.57;
+	if (g_bPythonMode)
+		CPythonControllerBase::ReadInitPose("python/prox_controller.py", px, py, ptheta);
 	char label[100];
 	for (int i = 0; i < m_nRobotsNumber; i++)
 	{

@@ -10,6 +10,7 @@
 
 /******************** Simulator ****************/
 #include <vector>
+#include <cstring>
 #include "simmath.h"
 #include "random.h"
 #include "programmedarena.h"
@@ -35,9 +36,58 @@
 #include "wheelsactuator.h"
 
 /******************** Controllers **************/
+#include "subsumptiongarbagecontroller.h"
 #include "pythonsubsumptioncontroller.h"
 
+/* -P flag: use the Python controller instead of the C++ one */
+extern bool g_bPythonMode;
+
 using namespace std;
+
+/*Create Arena (C++ mode; in Python mode the map is read from the .py file) */
+static const char* pchHeightMap = 
+"%%%%%%%%%%%%%%%%%%%%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%%%%%%%%%%%%%%%%%%%%";
+
+//"%%%%%%%%%%%%%%%%%%%%"
+//"%##################%"
+//"%##################%"
+//"%##########%#######%"
+//"%##########%#######%"
+//"%#%%%######%#######%"
+//"%############%%%###%"
+//"%##################%"
+//"%##########%#######%"
+//"%###########%%%%%##%"
+//"%##################%"
+//"%%%%%%#############%"
+//"%##################%"
+//"%##################%"
+//"%#####%%###########%"
+//"%#####%%###########%"
+//"%#####%%%%%########%"
+//"%##################%"
+//"%##################%"
+//"%%%%%%%%%%%%%%%%%%%%";
+
 
 extern gsl_rng* rng;
 extern long int rngSeed;
@@ -48,9 +98,19 @@ extern long int rngSeed;
 CSubsumptionGarbageExp::CSubsumptionGarbageExp(const char* pch_name, const char* paramsFile) :
 	CExperiment(pch_name, COLLISION_MODEL_SIMPLE, COLLISION_HANDLER_POSITION)
 {
-	/* Arena layout always comes from the Python file */
-	m_pchHeightMap = CPythonControllerBase::ReadArenaConfig("python/subsumption_garbage_controller.py",
-		m_nArenaCellsX, m_nArenaCellsY, m_fArenaWidth, m_fArenaHeight);
+	/* Arena layout: from the Python file in Python mode, the C++ map otherwise */
+	if (g_bPythonMode)
+		m_pchHeightMap = CPythonControllerBase::ReadArenaConfig("python/subsumption_garbage_controller.py",
+			m_nArenaCellsX, m_nArenaCellsY, m_fArenaWidth, m_fArenaHeight);
+	else
+	{
+		m_nArenaCellsX = 20;
+		m_nArenaCellsY = 20;
+		m_fArenaWidth  = 3.0;
+		m_fArenaHeight = 3.0;
+		m_pchHeightMap = new char[strlen(pchHeightMap) + 1];
+		strcpy(m_pchHeightMap, pchHeightMap);
+	}
 	
 	/* If there is not a parameter file input get default values*/
 	if (paramsFile == NULL )
@@ -360,7 +420,11 @@ void CSubsumptionGarbageExp::SetController(CEpuck* pc_epuck)
 {
 	char pchTemp[128];
 	sprintf(pchTemp, "Iri1");
-	CController* pcController = new CPythonSubsumptionController(pchTemp, pc_epuck, "python/subsumption_garbage_controller.py", m_nWriteToFile);
+	CController* pcController = NULL;
+	if (g_bPythonMode)
+		pcController = new CPythonSubsumptionController(pchTemp, pc_epuck, "python/subsumption_garbage_controller.py", m_nWriteToFile);
+	else
+		pcController = new CSubsumptionGarbageController(pchTemp, pc_epuck, m_nWriteToFile);
 	pc_epuck->SetControllerType( CONTROLLER_SUBSUMPTION_GARBAGE );
 	pc_epuck->SetController(pcController);
 

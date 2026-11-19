@@ -73,7 +73,8 @@ class Simulator:
         self.produce_frames = produce_frames
 
     def _build_command(self):
-        cmd = [_BINARY, "-E", str(self.experiment)]
+        # -P: irsim uses the Python controllers (./irsim alone uses C++)
+        cmd = [_BINARY, "-E", str(self.experiment), "-P"]
         if self.seed is not None:
             cmd += ["-s", str(self.seed)]
         if not self.visual:

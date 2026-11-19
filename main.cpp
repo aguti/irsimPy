@@ -183,6 +183,7 @@ bool 					g_bWriteToFiles             = true;		// Write to files flag
 bool 					g_bNNParameters							= false;
 
 bool 					g_bVisual 									= true;
+bool 					g_bPythonMode 							= false;	// -P: use the Python controllers
 /******************************************************************************/
 /******************************************************************************/
 
@@ -256,6 +257,12 @@ int main(int argc, char** argv)
 			case 'v':
 				g_bVisual = false;
 				printf("No visual\n");
+				break;
+
+			/* Python mode: use the Python controllers in python/ */
+			case 'P':
+				g_bPythonMode = true;
+				printf("Python mode\n");
 				break;
 			/* Print Help */
 			case 'h':
@@ -1406,6 +1413,7 @@ void usage(){
 	printf("-c chromosomefilename, introduce chromosome paramfile\n");
 	printf("-l create random genome for the learing function\n");
 	printf("-v work with the NULL render\n");
+	printf("-P use the Python controllers (python/*.py) instead of the C++ ones\n");
 	printf("\n\n -h, prints this help\n");
 	exit(0);
 }

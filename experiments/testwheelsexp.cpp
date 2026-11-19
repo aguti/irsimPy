@@ -21,7 +21,11 @@
 #include "wheelsactuator.h"
 
 /******************** Controllers **************/
+#include "testwheelscontroller.h"
 #include "pythonwheelscontroller.h"
+
+/* -P flag: use the Python controller instead of the C++ one */
+extern bool g_bPythonMode;
 
 
 
@@ -118,7 +122,11 @@ void CTestWheelsExp::SetController(CEpuck* pc_epuck)
 	/* Create and add test wheelscontroller */
 	char pchTemp[128];
 	sprintf(pchTemp, "testwheels");
-	CController* pcController = new CPythonWheelsController(pchTemp, pc_epuck, "python/wheels_controller.py");
+	CController* pcController = NULL;
+	if (g_bPythonMode)
+		pcController = new CPythonWheelsController(pchTemp, pc_epuck, "python/wheels_controller.py");
+	else
+		pcController = new CTestWheelsController(pchTemp, pc_epuck);
 	pc_epuck->SetControllerType( CONTROLLER_TEST_WHEELS );
 	pc_epuck->SetController(pcController);
 }
@@ -128,8 +136,10 @@ void CTestWheelsExp::SetController(CEpuck* pc_epuck)
 
 void CTestWheelsExp::CreateAndAddEpucks(CSimulator* pc_simulator)
 {
-	double px, py, ptheta;
-	CPythonControllerBase::ReadInitPose("python/wheels_controller.py", px, py, ptheta);
+	/* Initial pose: from the Python file in Python mode, (0, 0, 0) otherwise */
+	double px = 0.0, py = 0.0, ptheta = 0.0;
+	if (g_bPythonMode)
+		CPythonControllerBase::ReadInitPose("python/wheels_controller.py", px, py, ptheta);
 	char label[100];
 	for (int i = 0; i < m_nRobotsNumber; i++)
 	{

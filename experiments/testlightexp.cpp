@@ -23,7 +23,11 @@
 #include "wheelsactuator.h"
 
 /******************** Controllers **************/
+#include "testlightcontroller.h"
 #include "pythonlightcontroller.h"
+
+/* -P flag: use the Python controller instead of the C++ one */
+extern bool g_bPythonMode;
 
 
 
@@ -148,7 +152,11 @@ void CTestLightExp::SetController(CEpuck* pc_epuck)
 	/* Create and add test light controller */
 	char pchTemp[128];
 	sprintf(pchTemp, "testlight");
-	CController* pcController = new CPythonLightController(pchTemp, pc_epuck, "python/light_controller.py");
+	CController* pcController = NULL;
+	if (g_bPythonMode)
+		pcController = new CPythonLightController(pchTemp, pc_epuck, "python/light_controller.py");
+	else
+		pcController = new CTestLightController(pchTemp, pc_epuck);
 	pc_epuck->SetControllerType( CONTROLLER_TEST_LIGHT );
 	pc_epuck->SetController(pcController);
 }
@@ -158,8 +166,10 @@ void CTestLightExp::SetController(CEpuck* pc_epuck)
 
 void CTestLightExp::CreateAndAddEpucks(CSimulator* pc_simulator)
 {
-	double px, py, ptheta;
-	CPythonControllerBase::ReadInitPose("python/light_controller.py", px, py, ptheta);
+	/* Initial pose: from the Python file in Python mode, the original one otherwise */
+	double px = 0.5, py = 0.5, ptheta = 0.0;
+	if (g_bPythonMode)
+		CPythonControllerBase::ReadInitPose("python/light_controller.py", px, py, ptheta);
 	char label[100];
 	for (int i = 0; i < m_nRobotsNumber; i++)
 	{

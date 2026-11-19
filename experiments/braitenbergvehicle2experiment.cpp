@@ -10,6 +10,7 @@
 
 /******************** Simulator ****************/
 #include <vector>
+#include <cstring>
 #include "simmath.h"
 #include "random.h"
 #include "programmedarena.h"
@@ -32,9 +33,37 @@
 #include "wheelsactuator.h"
 
 /******************** Controllers **************/
+#include "braitenbergvehicle2controller.h"
 #include "pythonbraitenbergcontroller.h"
 
+/* -P flag: use the Python controller instead of the C++ one */
+extern bool g_bPythonMode;
+
 using namespace std;
+
+/*Create Arena (C++ mode; in Python mode the map is read from the .py file) */
+static const char* pchHeightMap = 
+"%%%%%%%%%%%%%%%%%%%%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%%%%%%%%%%%%%%%%%%%%";
+
 
 extern gsl_rng* rng;
 extern long int rngSeed;
@@ -49,9 +78,19 @@ CBraitenbergVehicle2Experiment::CBraitenbergVehicle2Experiment(const char* pch_n
 	m_fLightSensorRange = 1.0; //1 meter
 	m_fBlueLightSensorRange = 1.0; //1 meter
 
-	/* Arena layout always comes from the Python file */
-	m_pchHeightMap = CPythonControllerBase::ReadArenaConfig("python/braitenberg_controller.py",
-		m_nArenaCellsX, m_nArenaCellsY, m_fArenaWidth, m_fArenaHeight);
+	/* Arena layout: from the Python file in Python mode, the C++ map otherwise */
+	if (g_bPythonMode)
+		m_pchHeightMap = CPythonControllerBase::ReadArenaConfig("python/braitenberg_controller.py",
+			m_nArenaCellsX, m_nArenaCellsY, m_fArenaWidth, m_fArenaHeight);
+	else
+	{
+		m_nArenaCellsX = 20;
+		m_nArenaCellsY = 20;
+		m_fArenaWidth  = 3.0;
+		m_fArenaHeight = 3.0;
+		m_pchHeightMap = new char[strlen(pchHeightMap) + 1];
+		strcpy(m_pchHeightMap, pchHeightMap);
+	}
 	
 	/* If there is not a parameter file input get default values*/
 	if (paramsFile == NULL )
@@ -353,7 +392,11 @@ void CBraitenbergVehicle2Experiment::SetController(CEpuck* pc_epuck)
 {
 	char pchTemp[128];
 	sprintf(pchTemp, "Iri1");
-	CController* pcController = new CPythonBraitenbergController(pchTemp, pc_epuck, "python/braitenberg_controller.py");
+	CController* pcController = NULL;
+	if (g_bPythonMode)
+		pcController = new CPythonBraitenbergController(pchTemp, pc_epuck, "python/braitenberg_controller.py");
+	else
+		pcController = new CBraitenbergVehicle2Controller(pchTemp, pc_epuck, m_nWriteToFile);
 	pc_epuck->SetControllerType( CONTROLLER_BRAITENBERG_VEHICLE2 );
 	pc_epuck->SetController(pcController);
 

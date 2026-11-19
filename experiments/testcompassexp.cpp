@@ -24,7 +24,11 @@
 #include "wheelsactuator.h"
 
 /******************** Controllers **************/
+#include "testcompasscontroller.h"
 #include "pythoncompasscontroller.h"
+
+/* -P flag: use the Python controller instead of the C++ one */
+extern bool g_bPythonMode;
 
 
 
@@ -152,7 +156,11 @@ void CTestCompassExp::SetController(CEpuck* pc_epuck)
 	/* Create and add test encoder controller */
 	char pchTemp[128];
 	sprintf(pchTemp, "testencoder");
-	CController* pcController = new CPythonCompassController(pchTemp, pc_epuck, "python/compass_controller.py");
+	CController* pcController = NULL;
+	if (g_bPythonMode)
+		pcController = new CPythonCompassController(pchTemp, pc_epuck, "python/compass_controller.py");
+	else
+		pcController = new CTestCompassController(pchTemp, pc_epuck);
 	pc_epuck->SetControllerType( CONTROLLER_TEST_COMPASS );
 	pc_epuck->SetController(pcController);
 }
@@ -162,8 +170,10 @@ void CTestCompassExp::SetController(CEpuck* pc_epuck)
 
 void CTestCompassExp::CreateAndAddEpucks(CSimulator* pc_simulator)
 {
-	double px, py, ptheta;
-	CPythonControllerBase::ReadInitPose("python/compass_controller.py", px, py, ptheta);
+	/* Initial pose: from the Python file in Python mode, the original one otherwise */
+	double px = 0.0, py = 0.0, ptheta = 0.0;
+	if (g_bPythonMode)
+		CPythonControllerBase::ReadInitPose("python/compass_controller.py", px, py, ptheta);
 	char label[100];
 	for (int i = 0; i < m_nRobotsNumber; i++)
 	{

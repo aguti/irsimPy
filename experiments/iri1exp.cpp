@@ -10,6 +10,7 @@
 
 /******************** Simulator ****************/
 #include <vector>
+#include <cstring>
 #include "simmath.h"
 #include "random.h"
 #include "programmedarena.h"
@@ -35,13 +36,102 @@
 #include "wheelsactuator.h"
 
 /******************** Controllers **************/
+#include "iri1controller.h"
 #include "pythoniri1controller.h"
+
+/* -P flag: use the Python controller instead of the C++ one */
+extern bool g_bPythonMode;
 
 using namespace std;
 
 /******************************************************************************/
 /******************************************************************************/
 
+/*Create Arena (C++ mode; in Python mode the map is read from the .py file) */
+static const char* pchHeightMap = 
+//"%%%%%%%%%%%%%%%%%%%%"
+//"%############%#####%"
+//"%############%#####%"
+//"%##%%%%%%%%##%##%##%"
+//"%##%######%#####%##%"
+//"%##%######%#####%##%"
+//"%##%##%%%%%%%%%%%##%"
+//"%##%###############%"
+//"%##%###############%"
+//"%##%##%%%%%%%%#####%"
+//"%##%##%######%%%%%%%"
+//"%##%###############%"
+//"%##%#####%%########%"
+//"%##%%%%%%%%%%%#####%"
+//"%##%##%############%"
+//"%##%##%############%"
+//"%##%##%#####%%%%%##%"
+//"%#####%#########%##%"
+//"%#####%#########%##%"
+//"%%%%%%%%%%%%%%%%%%%%";
+
+"%%%%%%%%%%%%%%%%%%%%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%##################%"
+"%%%%%%%%%%%%%%%%%%%%";
+
+//"%%%%%%%%%%%%%%%%%%%%"
+//"%##################%"
+//"%##################%"
+//"%##################%"
+//"%##################%"
+//"%##################%"
+//"%##################%"
+//"%##################%"
+//"%%%%%%%%%%%%%%#####%"
+//"%##################%"
+//"%##################%"
+//"%##################%"
+//"%##################%"
+//"%##################%"
+//"%##################%"
+//"%##################%"
+//"%##################%"
+//"%##################%"
+//"%##################%"
+//"%%%%%%%%%%%%%%%%%%%%";
+
+//"%%%%%%%%%%%%%%%%%%%%"
+//"%##################%"
+//"%######%%%#########%"
+//"%##################%"
+//"%##################%"
+//"%##################%"
+//"%############%%%###%"
+//"%##################%"
+//"%##%%%%############%"
+//"%##################%"
+//"%##################%"
+//"%##########%%%%%###%"
+//"%##################%"
+//"%##################%"
+//"%##################%"
+//"%##################%"
+//"%###%%%#####%%%%###%"
+//"%##################%"
+//"%##################%"
+//"%%%%%%%%%%%%%%%%%%%%";
 extern gsl_rng* rng;
 extern long int rngSeed;
 
@@ -55,9 +145,19 @@ CIri1Exp::CIri1Exp(const char* pch_name, const char* paramsFile) :
 	m_fLightSensorRange = 1.0; //1 meter
 	m_fBlueLightSensorRange = 1.0; //1 meter
 
-	/* Arena layout always comes from the Python file */
-	m_pchHeightMap = CPythonControllerBase::ReadArenaConfig("python/iri1_controller.py",
-		m_nArenaCellsX, m_nArenaCellsY, m_fArenaWidth, m_fArenaHeight);
+	/* Arena layout: from the Python file in Python mode, the C++ map otherwise */
+	if (g_bPythonMode)
+		m_pchHeightMap = CPythonControllerBase::ReadArenaConfig("python/iri1_controller.py",
+			m_nArenaCellsX, m_nArenaCellsY, m_fArenaWidth, m_fArenaHeight);
+	else
+	{
+		m_nArenaCellsX = 20;
+		m_nArenaCellsY = 20;
+		m_fArenaWidth  = 3.0;
+		m_fArenaHeight = 3.0;
+		m_pchHeightMap = new char[strlen(pchHeightMap) + 1];
+		strcpy(m_pchHeightMap, pchHeightMap);
+	}
 
 	/* If there is not a parameter file, use defaults for everything else */
 	if (paramsFile == NULL )
@@ -368,7 +468,11 @@ void CIri1Exp::SetController(CEpuck* pc_epuck)
 {
 	char pchTemp[128];
 	sprintf(pchTemp, "Iri1");
-	CController* pcController = new CPythonIri1Controller(pchTemp, pc_epuck, "python/iri1_controller.py", m_nWriteToFile);
+	CController* pcController = NULL;
+	if (g_bPythonMode)
+		pcController = new CPythonIri1Controller(pchTemp, pc_epuck, "python/iri1_controller.py", m_nWriteToFile);
+	else
+		pcController = new CIri1Controller(pchTemp, pc_epuck, m_nWriteToFile);
 	pc_epuck->SetControllerType( CONTROLLER_IRI1 );
 	pc_epuck->SetController(pcController);
 

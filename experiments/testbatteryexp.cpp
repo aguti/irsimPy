@@ -28,7 +28,11 @@
 #include "wheelsactuator.h"
 
 /******************** Controllers **************/
+#include "testbatterycontroller.h"
 #include "pythonbatterycontroller.h"
+
+/* -P flag: use the Python controller instead of the C++ one */
+extern bool g_bPythonMode;
 
 using namespace std;
 
@@ -186,7 +190,11 @@ void CTestBatteryExp::SetController(CEpuck* pc_epuck)
 {
 	char pchTemp[128];
 	sprintf(pchTemp, "Iri1");
-	CController* pcController = new CPythonBatteryController(pchTemp, pc_epuck, "python/battery_controller.py");
+	CController* pcController = NULL;
+	if (g_bPythonMode)
+		pcController = new CPythonBatteryController(pchTemp, pc_epuck, "python/battery_controller.py");
+	else
+		pcController = new CTestBatteryController(pchTemp, pc_epuck);
 	pc_epuck->SetControllerType( CONTROLLER_TEST_BATTERY );
 	pc_epuck->SetController(pcController);
 
@@ -197,8 +205,10 @@ void CTestBatteryExp::SetController(CEpuck* pc_epuck)
 
 void CTestBatteryExp::CreateAndAddEpucks(CSimulator* pc_simulator)
 {
-	double px, py, ptheta;
-	CPythonControllerBase::ReadInitPose("python/battery_controller.py", px, py, ptheta);
+	/* Initial pose: from the Python file in Python mode, the original one otherwise */
+	double px = 0.0, py = 0.0, ptheta = M_PI/4;
+	if (g_bPythonMode)
+		CPythonControllerBase::ReadInitPose("python/battery_controller.py", px, py, ptheta);
 	char label[100];
 	for (int i = 0; i < m_nRobotsNumber; i++)
 	{
