@@ -204,7 +204,15 @@ Levels of competence (0 = highest priority):
 
 Each behavior writes [left_speed, right_speed, active] in activation_table,
 and the coordinator selects the active behavior with the highest priority.
-LEDs: GREEN avoiding, RED low battery, BLUE carrying a puck (Forage).
+Behaviors return nothing: activation_table is their only link to the
+coordinator.
+
+LEDs are independent of the activation: a behavior sets them directly with
+set_all_leds(color) (like SetAllColoredLeds in C++) when its condition holds,
+even if it does not activate (e.g. GoLoad sets RED whenever the battery is
+low). step() first sets them to LED_BLACK; if several behaviors set a color,
+the last one executed wins. Colors: GREEN avoiding, RED low battery, BLUE
+carrying a puck (Forage).
 
 step() receives the same sensors as IRI1 plus RobotSim_orientation (radians).
 
