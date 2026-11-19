@@ -20,10 +20,14 @@ CPythonControllerBase::CPythonControllerBase(const char* pch_name,
                                               CEpuck*     pc_epuck,
                                               const char* pch_script)
     : CController(pch_name, pc_epuck),
-      m_pid(-1), m_fdWrite(-1), m_pfRead(NULL)
+      m_pchScript(pch_script), m_pid(-1), m_fdWrite(-1), m_pfRead(NULL)
 {
     m_pcEpuck  = pc_epuck;
     m_acWheels = (CWheelsActuator*) m_pcEpuck->GetActuator(ACTUATOR_WHEELS);
+
+    /* If Python dies, writing to its pipe must fail instead of killing the
+       simulator, so SimulationStep can report the error */
+    signal(SIGPIPE, SIG_IGN);
 
     int pipe_to[2], pipe_from[2];
     if (pipe(pipe_to) < 0 || pipe(pipe_from) < 0) {
@@ -84,8 +88,10 @@ void CPythonControllerBase::SimulationStep(unsigned n_step_number,
     write(m_fdWrite, buf, len);
 
     if (!fgets(m_lineBuf, sizeof(m_lineBuf), m_pfRead)) {
-        fprintf(stderr, "[PythonController] read error\n");
-        return;
+        /* The Python process has died: its error is already on the terminal */
+        fprintf(stderr, "[PythonController] %s stopped. Fix the Python error shown above.\n",
+                m_pchScript);
+        exit(1);
     }
     handleResponse(m_lineBuf);
 }
@@ -156,8 +162,17 @@ char* CPythonControllerBase::ReadArenaConfig(const char* pch_script,
 
     char line[512];
 
+    /* No output means the script failed: its error is already on the terminal */
+    if (!fgets(line, sizeof(line), f)) {
+        pclose(f);
+        unlink(tmpPath);
+        fprintf(stderr, "[PythonController] Cannot read the arena from %s. "
+                        "Fix the Python error shown above.\n", pch_script);
+        exit(1);
+    }
+
     /* Arena dimensions */
-    fgets(line, sizeof(line), f); n_cells_x = atoi(line);
+    n_cells_x = atoi(line);
     fgets(line, sizeof(line), f); n_cells_y = atoi(line);
     fgets(line, sizeof(line), f); f_width = atof(line);
     fgets(line, sizeof(line), f); f_height = atof(line);

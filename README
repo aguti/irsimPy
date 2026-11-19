@@ -2,8 +2,9 @@ irsimPy
 =======
 
 irsimPy is the IRSIM e-puck robot simulator (C++) with a Python bridge: the
-robot controllers of the test experiments (1-11), the subsumption experiments
-(22, 23) and IRI1 (30) are written in Python, so you can program the robot without touching or recompiling C++.
+robot controllers of the test experiments (1-11), Braitenberg (20), the
+subsumption experiments (22, 23) and IRI1 (30) are written in Python, so you
+can program the robot without touching or recompiling C++.
 
 This README has two parts:
 
@@ -72,6 +73,7 @@ Experiments with Python controllers
    9  Test Battery Sensor    python/battery_controller.py      battery (1)
   10  Test Encoder Sensor    python/encoder_controller.py      encoder (2), RobotSim_pos_x/y
   11  Test Compass Sensor    python/compass_controller.py      encoder (2), compass (1)
+  20  Braitenberg Vehicle 2  python/braitenberg_controller.py  all sensors except encoder/compass
   22  Subsumption Light      python/subsumption_light_controller.py    all sensors (see below)
   23  Subsumption Garbage    python/subsumption_garbage_controller.py  all sensors (see below)
   30  IRI1                   python/iri1_controller.py         all sensors (see below)
@@ -101,6 +103,8 @@ Return values:
       speeds in [-1000, 1000]
   * Experiment 7 (switch light):  return left_speed, right_speed, switch_cmd
       switch_cmd: 1 = switch nearest light ON, 0 = OFF, None = no action
+  * Experiment 20 (Braitenberg):  return left_output, right_output
+      outputs in [0, 1]: 0.5 = stop, 1 = full forward, 0 = full backward
   * Experiments 22, 23 (subsumption) and 30 (IRI1):
       return left_speed, right_speed, switch_light, switch_blue, switch_red, leds
       switch_*: 1 = ON, 0 = OFF, None = no action (nearest light of that color)
@@ -185,6 +189,35 @@ Without a parameter file, IRI1 uses one robot at (0, 0) with orientation 0,
 no lights and no ground areas.
 
 
+Braitenberg (experiment 20)
+---------------------------
+
+Python version of the C++ Braitenberg Vehicle 2 controller. It uses the same
+param file as the C++ version:
+
+  python3 python/simulator.py -E 20 -p paramFiles/braitenbergExamples/braitenbergParam.txt
+
+  (or ./irsim with the same arguments)
+
+step() receives proximity, light (white, blue, red), contact, ground, ground
+memory and batteries, plus RobotSim_pos_x/y and RobotSim_orientation. This
+experiment has no encoder or compass sensors.
+
+Unlike the other controllers, step() returns wheel OUTPUTS in [0, 1] (as
+SetOutput in C++), not speeds: 0.5 = stop, 1 = full forward, 0 = full
+backward. Values outside [0, 1] are saturated.
+
+The vehicles are in the "Phase 3: actuation" part of step(). Uncomment one
+test and comment the others:
+
+  Tests 1-8  Vehicle 2, lateral / contra-lateral, positive / negative light
+             (light at (-0.7, 0.7), robot at (0, 0, 1.57))
+  Test 9     Vehicle 4, back & forth (active by default)
+
+The controller prints the light sensors every step and, as the C++ one,
+always appends the robot pose to outputFiles/robotPosition.
+
+
 Subsumption (experiments 22 and 23)
 -----------------------------------
 
@@ -232,7 +265,15 @@ Troubleshooting (Python)
     communication loop.
   * "Simulator binary not found": compile first (see PART 2, "Installation").
   * Controller not found: run the simulator from the irsimPy root folder.
-  * Python errors in your controller are shown in the terminal (stderr).
+  * Python errors in your controller are shown in the terminal (stderr),
+    and the simulator stops with one of these messages:
+      [PythonController] Cannot read the arena from python/<file>.py ...
+          the file has an error before step() runs (syntax, indentation,
+          ARENA_* values). The arena is read from the controller file when
+          the simulator starts, so ./irsim also fails if the file is broken.
+      [PythonController] python/<file>.py stopped ...
+          the controller crashed during the run (e.g. an exception in step()).
+    Fix the Python error printed just above the message and run again.
 
 
 ################################################################################
@@ -260,7 +301,6 @@ C++ experiments
 
 These experiments still use the original C++ controllers (in controllers/):
 
-  20  Braitenberg Vehicle 2
   21  Neuron Experiment
   24  CTRNN Experiment
   31  IRI2

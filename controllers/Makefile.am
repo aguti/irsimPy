@@ -16,6 +16,7 @@ libcontrollers_a_SOURCES = 	pythoncontrollerbase.cpp \
 								pythoncompasscontroller.cpp \
 								pythoniri1controller.cpp \
 								pythonsubsumptioncontroller.cpp \
+								pythonbraitenbergcontroller.cpp \
 								testwheelscontroller.cpp \
 														testlightcontroller.cpp \
 														testswitchlightcontroller.cpp \

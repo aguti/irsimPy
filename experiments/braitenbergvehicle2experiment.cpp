@@ -32,33 +32,9 @@
 #include "wheelsactuator.h"
 
 /******************** Controllers **************/
-#include "braitenbergvehicle2controller.h"
+#include "pythonbraitenbergcontroller.h"
 
 using namespace std;
-
-/*Create Arena */
-static const char* pchHeightMap = 
-"%%%%%%%%%%%%%%%%%%%%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%##################%"
-"%%%%%%%%%%%%%%%%%%%%";
-
 
 extern gsl_rng* rng;
 extern long int rngSeed;
@@ -72,6 +48,10 @@ CBraitenbergVehicle2Experiment::CBraitenbergVehicle2Experiment(const char* pch_n
 
 	m_fLightSensorRange = 1.0; //1 meter
 	m_fBlueLightSensorRange = 1.0; //1 meter
+
+	/* Arena layout always comes from the Python file */
+	m_pchHeightMap = CPythonControllerBase::ReadArenaConfig("python/braitenberg_controller.py",
+		m_nArenaCellsX, m_nArenaCellsY, m_fArenaWidth, m_fArenaHeight);
 	
 	/* If there is not a parameter file input get default values*/
 	if (paramsFile == NULL )
@@ -87,6 +67,7 @@ CBraitenbergVehicle2Experiment::CBraitenbergVehicle2Experiment(const char* pch_n
 			m_fRobotOrientations[i] 	= 0.0;
 		}
 		m_nRunTime = 10000;
+		m_nWriteToFile = 0;
 
 
 		m_nLightObjectNumber = 0;
@@ -94,6 +75,9 @@ CBraitenbergVehicle2Experiment::CBraitenbergVehicle2Experiment(const char* pch_n
 	
 		m_nBlueLightObjectNumber = 0;
 		m_pcvBlueLightObjects = new dVector2[m_nBlueLightObjectNumber];
+
+		m_nRedLightObjectNumber = 0;
+		m_pcvRedLightObjects = new dVector2[m_nRedLightObjectNumber];
 		
 		m_nNumberOfGroundArea = 0;
 		m_vGroundAreaCenter = new dVector2[m_nNumberOfGroundArea];
@@ -231,6 +215,7 @@ CBraitenbergVehicle2Experiment::~CBraitenbergVehicle2Experiment ( void )
 	delete [] m_fGroundAreaExternalRadius;
 	delete [] m_fGroundAreaInternalRadius;
 	delete [] m_fGroundAreaColor;
+	delete [] m_pchHeightMap;
 }
 
 	/******************************************************************************/
@@ -240,8 +225,8 @@ CArena* CBraitenbergVehicle2Experiment::CreateArena()
 
 	/* Create Arena */
 	CArena* pcArena = NULL;
-	pcArena = new CProgrammedArena("CProgrammedArena", 20, 20, 3.0, 3.0);
-	((CProgrammedArena*)pcArena)->SetHeightPixelsFromChars(pchHeightMap, ' ', '#', '%');
+	pcArena = new CProgrammedArena("CProgrammedArena", m_nArenaCellsX, m_nArenaCellsY, m_fArenaWidth, m_fArenaHeight);
+	((CProgrammedArena*)pcArena)->SetHeightPixelsFromChars(m_pchHeightMap, ' ', '#', '%');
 
 	/* Create and add Light Object */
 	char pchTemp[128];
@@ -368,7 +353,7 @@ void CBraitenbergVehicle2Experiment::SetController(CEpuck* pc_epuck)
 {
 	char pchTemp[128];
 	sprintf(pchTemp, "Iri1");
-	CController* pcController = new CBraitenbergVehicle2Controller(pchTemp, pc_epuck, m_nWriteToFile);
+	CController* pcController = new CPythonBraitenbergController(pchTemp, pc_epuck, "python/braitenberg_controller.py");
 	pc_epuck->SetControllerType( CONTROLLER_BRAITENBERG_VEHICLE2 );
 	pc_epuck->SetController(pcController);
 

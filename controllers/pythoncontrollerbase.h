@@ -45,6 +45,7 @@ protected:
     CEpuck*          m_pcEpuck;
 
 private:
+    const char* m_pchScript;
     pid_t m_pid;
     int   m_fdWrite;
     FILE* m_pfRead;
