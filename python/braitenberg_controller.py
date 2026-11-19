@@ -89,8 +89,8 @@ def step(step_number, time, step_interval,
 
     # TEST 1-8: Light (-0.7, 0.7), Robot (0.0, 0.0, 1.57)
     # Test 1: V2 - Contra Lateral + Light
-    # left_output  = 0.5 + light[7]
-    # right_output = 0.5 + light[0]
+    left_output  = 0.5 + light[7]
+    right_output = 0.5 + light[0]
 
     # Test 2: V2 - Lateral + Light
     #left_output  = 0.5 + light[0]
@@ -131,14 +131,14 @@ def step(step_number, time, step_interval,
 
     # TEST 9: Light (-0.7, 0.7) & (0.7, -0.7), Robot (0.0, 0.0, 1.57)
     # Test 9: V4 - Back&Forth - Light
-    light_left  = light[0] + light[1]    # + light[2]
-    light_right = light[7] + light[6]    # + light[5]
+    #light_left  = light[0] + light[1]    # + light[2]
+    #light_right = light[7] + light[6]    # + light[5]
 
-    if light_right > 0.5:
-        light_right = 1 - light_right
+    #if light_right > 0.5:
+        #light_right = 1 - light_right
 
-    left_output  = 0.6 + light_right
-    right_output = 0.6 + light_left
+    #left_output  = 0.6 + light_right
+    #right_output = 0.6 + light_left
 
     return left_output, right_output
 
