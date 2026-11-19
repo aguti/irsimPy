@@ -1,0 +1,3220 @@
+ ▐▛███▛█   Claude Code v2.1.312
+▝▜██████▀  Opus 5.5 · Claude Pro
+ ▝▝   ▝▝   ~/universidad/simulators/irsimPy
+
+  Get to finished work sooner with Opus 5.5. Update Claude Code to try it.
+  1 more notice hidden
+
+❯ /login                                                                        
+  ⎿  Login successful
+
+❯ check our last conversations on conversations folder                          
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Auto mode lets Claude handle permission prompts automatically — Claude
+  checks each tool call for risky actions and prompt injection before 
+  executing. Actions Claude identifies as safe are executed, while 
+  actions Claude identifies as risky are blocked and Claude may try a 
+  different approach. Ideal for long-running tasks. Claude can make 
+  mistakes that allow harmful commands to run, it's recommended to only 
+  use in isolated environments. Shift+Tab to change mode.
+
+● The latest file includes the July 17 one, so I'll read the newer part of it
+  closely.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● I read the three saved conversations in claudeCodeConversations/. Here's where
+  we are.
+
+  The project
+
+  irsimPy is the irsim C++ robotics simulator (e-puck robots) with a bridge
+  added so that robot controllers can be written in Python. The simulator starts
+  a Python controller from python/ and sends sensor data to it each step over
+  stdin/stdout. The controller sends back wheel speeds and LED values.
+
+  2026-06-23: first session
+
+  - We built the Python bridge and simulator.py, which lists the available
+    experiments. The irsimpy folder was renamed to python/.
+  - We wrote Python controllers for experiments 1–11 (sensor tests). They now
+    print sensor readings as well as moving the wheels.
+  - We started experiment 30 (experiments/iri1exp with iri1_controller.py),
+    including the red switch and LED options.
+
+  2026-07-17: second session
+
+  - Experiments 1–3 now print time instead of step number.
+  - Experiments 1–11 take the robot's starting position and orientation from the
+    Python file. The first version made the simulator hang because reading the
+    Python file blocked on stdin. That was fixed with < /dev/null.
+  - All floats now print with 4 decimals.
+  - Each Python controller's file name now starts with its experiment number.
+  - In experiment 10 (encoder), pos_x and pos_y were renamed to make clear they
+    come from the simulator (RobotSim_pos_x and RobotSim_pos_y).
+
+  2026-07-25: last session, on experiment 30 (IRI1)
+
+  - The arena settings now live in python/iri1_controller.py: ARENA_CELLS_X/Y,
+    ARENA_WIDTH/HEIGHT, and ARENA_MAP (% is a wall, # is free space).
+  - In experiments/iri1exp.cpp, the new ReadArenaConfig() function reads those
+    settings when the simulator starts. Editing the map doesn't need a
+    recompile.
+  - Lights and ground areas were removed from the Python file because they come
+    from the param files.
+  - Fixes in that session:
+    - Walls appeared in the wrong place because the map was upside down. The
+      rows are now reversed so the map in the Python file looks the same as the
+      arena on screen.
+    - Experiment 30 hung on startup. That was the same stdin problem, fixed with
+      < /dev/null.
+    - The map was ignored when a param file was given. ReadArenaConfig now runs
+      whether or not there's a param file, for example with
+      paramFiles/iri2Param.txt.
+  - In iri1_controller.py, pos_x and pos_y were renamed to RobotSim_pos_x and
+    RobotSim_pos_y.
+
+  The session ended with everything working, and those changes are committed
+  (6702403). The working tree has no uncommitted changes. What would you like to
+  do next?
+
+✻ Brewed for 22s · done Wednesday 7:46 PM
+
+❯ Create a README to use irsimPy. Keep the actual content at the end            
+
+  Ran 3 shell commands (ctrl+o to expand)
+
+● Now I'll write the README. The new usage guide goes first and the original
+  text stays at the end, unchanged.
+
+● Bash(cp README /tmp/claude-1000/-home-aguti-universidad-simulators-irsimPy/e37
+      85d1b-bf1c-422e-aeb5-fee38d5728d1/scratchpad/README.orig && cat >
+      /tmp/claude-1000/-hom…)
+  ⎿  196
+      README | 219 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+     +++++++++
+      1 file changed, 219 insertions(+)
+  ⎿  Updated README (+219 -0)
+        1 +irsimPy                                                       
+        2 +=======                                                       
+        3 +                                                              
+        4 +irsimPy is the IRSIM e-puck robot simulator (C++) with a Pytho
+          +n bridge: the                                                 
+        5 +robot controllers of the test experiments (1-11) and of IRI1 (
+          +30) are written                                               
+        6 +in Python, so you can program the robot without touching or re
+          +compiling C++.                                                
+        7 +                                                              
+        8 +The simulator launches your Python controller as a child proce
+          +ss. Every                                                     
+        9 +simulation step it sends the sensor readings to the controller
+          + through stdin,                                               
+       10 +and reads back the actuator commands (wheel speeds, lights, LE
+          +Ds) from stdout.                                              
+       11 +                                                              
+       12 +                                                              
+       13 +Quick start                                                   
+       14 +-----------                                                   
+       15 +                                                              
+       16 +1) Install dependencies and compile (see "Dependences" and "In
+          +stallation" in                                                
+       17 +   the original README at the end of this file):              
+       18 +                                                              
+       19 +     ./bootstrap.sh                                           
+       20 +     ./configure                                              
+       21 +     make                                                     
+       22 +                                                              
+       23 +2) Always run from the root folder of irsimPy (controllers are
+          + found through                                                
+       24 +   relative paths such as python/iri1_controller.py).         
+       25 +                                                              
+       26 +3) List the experiments:                                      
+       27 +                                                              
+       28 +     ./irsim -E                                               
+       29 +     python3 python/simulator.py -E                           
+       30 +                                                              
+       31 +4) Run an experiment:                                         
+       32 +                                                              
+       33 +     ./irsim -E 1                                             
+       34 +     python3 python/simulator.py -E 1                         
+       35 +                                                              
+       36 +5) Run an experiment with a parameter file:                   
+       37 +                                                              
+       38 +     ./irsim -E 30 -p paramFiles/iri2Param.txt                
+       39 +     python3 python/simulator.py -E 30 -p paramFiles/iri2Param
+          +.txt                                                          
+       40 +                                                              
+     … 182 more lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● I've rewritten README as a guide to using irsimPy. The original text
+  (dependencies, installation, running experiments, making movies) is still
+  there, unchanged, at the end under the heading ORIGINAL IRSIM README. I
+  checked the diff and no original lines were removed. I didn't compile or run
+  the simulator after this change, since only the README changed.
+
+  The new sections at the top:
+
+  1. Introduction: what irsimPy is and how the simulator and the Python
+     controller talk to each other.
+  2. Quick start: how to compile, list the experiments and run them, with or
+     without a param file. Both ./irsim and python3 python/simulator.py are
+     shown, and both must be run from the irsimPy root folder.
+  3. Command line options: -E -p -s -v -e -c -f, plus how to call Simulator from
+     your own Python code.
+  4. Experiments and Python controllers: a table matching experiments 1–11 and
+     30 to their controller file and the sensors each step() receives. It notes
+     that experiments 20–24 and 31–32 still use the C++ controllers.
+  5. Writing a controller:
+     - the structure of a controller file and what each experiment's step() must
+       return
+     - the rule to print to stderr, because stdout carries the messages to the
+       simulator
+     - the range of each sensor
+     - that RobotSim_pos_x/y is the simulator's true position, which a real
+       robot wouldn't have
+  6. Initial position (experiments 1–11): the INIT_X/Y/THETA settings. The arena
+     is 3×3 m, so x and y go from −1.5 to 1.5.
+  7. IRI1 (experiment 30): how ARENA_MAP works (% is a wall, # is free space,
+     the first string is the top row). It also lists what the param file still
+     sets and the defaults when there's no param file.
+  8. Folder layout and Troubleshooting, including the hang caused by printing to
+     stdout or reading stdin outside the communication loop.
+
+  The README is written in English, like the original. It isn't committed yet;
+  tell me if you want me to commit it.
+
+✻ Cogitated for 52s · done Wednesday 7:48 PM
+
+❯ Separate the README in section of C and Python                                
+
+● Bash(S=/tmp/claude-1000/-home-aguti-universidad-simulators-irsimPy/e3785d1b-bf
+      1c-422e-aeb5-fee38d5728d1/scratchpad && cat > $S/head.txt <<'EOF'
+      irsimPy…)
+  ⎿   README | 235 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+     +++++++++
+      1 file changed, 235 insertions(+)
+  ⎿  Updated README (+63 -47)
+       5  robot controllers of the test experiments (1-11) and of IRI1 (3
+          0) are written
+       6  in Python, so you can program the robot without touching or rec
+          ompiling C++.
+       7  
+       8 -The simulator launches your Python controller as a child proces
+         -s. Every                                                       
+       9 -simulation step it sends the sensor readings to the controller 
+         -through stdin,                                                 
+      10 -and reads back the actuator commands (wheel speeds, lights, LED
+         -s) from stdout.                                                
+       8 +This README has two parts:                                     
+       9  
+      10 +  PART 1 - PYTHON   how to run experiments and program robots i
+         +n Python                                                       
+      11 +  PART 2 - C++      the simulator itself: dependencies, compila
+         +tion, C++                                                      
+      12 +                    experiments and the original IRSIM document
+         +ation                                                          
+      13  
+      13 -Quick start                                                    
+      14 ------------                                                    
+      14 +The simulator (C++) must be compiled once before using the Pyth
+         +on part                                                        
+      15 +(see PART 2, "Installation").                                  
+      16  
+      16 -1) Install dependencies and compile (see "Dependences" and "Ins
+         -tallation" in                                                  
+      17 -   the original README at the end of this file):               
+      17  
+      19 -     ./bootstrap.sh                                            
+      20 -     ./configure                                               
+      21 -     make                                                      
+      18 +###############################################################
+         +#################                                              
+      19 +PART 1 - PYTHON                                                
+      20 +###############################################################
+         +#################                                              
+      21  
+      23 -2) Always run from the root folder of irsimPy (controllers are 
+         -found through                                                  
+      24 -   relative paths such as python/iri1_controller.py).          
+      22 +How it works                                                   
+      23 +------------                                                   
+      24  
+      26 -3) List the experiments:                                       
+      25 +The simulator launches your Python controller as a child proces
+         +s. Every                                                       
+      26 +simulation step it sends the sensor readings to the controller 
+         +through stdin,                                                 
+      27 +and reads back the actuator commands (wheel speeds, lights, LED
+         +s) from stdout.                                                
+      28  
+      28 -     ./irsim -E                                                
+      29 -     python3 python/simulator.py -E                            
+      29 +Editing a Python controller does NOT require recompiling: save 
+         +the file and                                                   
+     … 127 more lines (ctrl+o to expand)
+
+  Listed 1 directory (ctrl+o to expand)
+
+● I split README into a Python part and a C++ part. Python comes first so the
+  original text can still sit at the very end, as you asked last time.
+
+  Intro: what irsimPy is, a list of the two parts, and a note that the C++
+  simulator must be compiled once before you use the Python part.
+
+  PART 1 – PYTHON
+  - How the simulator and the Python controller talk to each other
+  - Running experiments with python/simulator.py, its command options, and
+    calling Simulator from your own code
+  - A table of the experiments that use Python controllers (1–11 and 30), with
+    the controller file and sensors for each
+  - Writing a controller: file structure, what step() returns, printing to
+    stderr, sensor ranges
+  - Initial position for experiments 1–11 (INIT_X/Y/THETA)
+  - IRI1 (experiment 30): ARENA_MAP and what still comes from the param file
+  - Troubleshooting
+
+  PART 2 – C++
+  - Folder layout: the Python bridge is in controllers/python*controller.cpp,
+    and any change to a .cpp or .h file needs a make
+  - The experiments that still use C++ controllers: 20–24, 31 and 32
+  - The original IRSIM README, unchanged (dependencies, installation, ./irsim 
+    -E, making movies)
+
+  The diff only adds lines, so none of the original text was lost. The README
+  isn't committed yet.
+
+✻ Sautéed for 35s · done Wednesday 7:49 PM
+
+❯ commit the README                                                             
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● I committed the README as 3497139 on main. It was the only changed file, and I
+  haven't pushed it.
+
+✻ Sautéed for 4s · done Wednesday 7:49 PM
+
+❯ push it                                                                       
+
+  Pushed to main (ctrl+o to expand)
+
+● I pushed main to github.com:aguti/irsimPy.git. The README commit (3497139) is
+  now on GitHub.
+
+✻ Cogitated for 6s · done Wednesday 7:49 PM
+
+※ recap: You're building irsimPy so robots in the C++ simulator can be programmed in Python. The new README, with separate Python and C++ parts, is committed and pushed to GitHub. Next, pick the next experiment or feature to work on. (disable recaps in /config)
+
+❯ We need to work on the subbumptions experimetns. That is exp. 22 and 23.      
+  Those experiments take param files as input in the use in C++. That is, for   
+  example we use ./irsim -E 22 -p                                               
+  paramfiles/subExamples/paramFileSubsumptionLight.txt and ./irsim -E 23 -p     
+  paramFiles/subExamples/paramFileSubsumptionGarbage.txt. So we want to create  
+  the python code as in the previous examples and keeping the way of inputing   
+  the same param file, so we can use the same file both on the pyhton or C      
+  system. Create the experiments                                                
+
+  Read 2 files, listed 1 directory, ran 2 shell commands (ctrl+o to expand)
+
+● The C++ controllers use GetSensorDirections() for the proximity sensors. Let
+  me check those values, the experiment constructors and the build files.
+
+  Listed 1 directory, ran 2 shell commands (ctrl+o to expand)
+
+● I've settled the plan: two Python controllers ported from the C++ behaviours,
+  a new C++ bridge reusing IRI1's sensor and actuator handling, and Experiments
+  22/23 switched to the Python controllers with the arena config moved into a
+  shared helper.
+
+  Ran 1 shell command (ctrl+o to expand)
+● Step 1: move the arena reader into the shared bridge base so IRI1 and both
+  subsumption experiments use one copy.
+
+● Bash(python3 - <<'EOF'
+      import re…)
+  ⎿  char* CPythonControllerBase::ReadArenaConfig(const char* pch_script,
+                                                   int& n_cells_x, int& n_c
+     ells_y,
+     … +67 lines (ctrl+o to expand)
+  ⎿  Updated controllers/pythoncontrollerbase.h (+6 -0)
+      26      static void ReadInitPose(const char* pch_script,
+      27                               double& x, double& y, double& thet
+          a);
+      28  
+      29 +    /* Reads ARENA_CELLS_X/Y, ARENA_WIDTH/HEIGHT and ARENA_MAP 
+         +from the                                                       
+      30 +       script. Returns the map as a flat string (caller deletes
+         + it). */                                                       
+      31 +    static char* ReadArenaConfig(const char* pch_script,       
+      32 +                                 int& n_cells_x, int& n_cells_y
+         +,                                                              
+      33 +                                 double& f_width, double& f_hei
+         +ght);                                                          
+      34 +                                                               
+      35  protected:
+      36      /* Subclass appends sensor values to buf (already prefixed 
+          with
+      37         "step time interval"). len must be updated accordingly. 
+          */
+  ⎿  Updated experiments/iri1exp.cpp (+2 -52)
+      10  
+      11  /******************** Simulator ****************/
+      12  #include <vector>
+      13 -#include <cstdio>                                              
+      14 -#include <cstdlib>                                             
+      15 -#include <cstring>                                             
+      13  #include "simmath.h"
+      14  #include "random.h"
+      15  #include "programmedarena.h"
+     ...
+      42  /**************************************************************
+          ****************/
+      43  /**************************************************************
+          ****************/
+      44  
+      48 -void CIri1Exp::ReadArenaConfig(const char* pch_script)         
+      49 -{                                                              
+      50 -    /* Write a temporary Python reader script */               
+      51 -    const char* tmpPath = "/tmp/irsim_arena_reader.py";        
+      52 -    FILE* fw = fopen(tmpPath, "w");                            
+      53 -    if (!fw) { fprintf(stderr, "[IRI1] Cannot write arena reade
+         -r\n"); return; }                                               
+      54 -                                                               
+      55 -    fprintf(fw,                                                
+      56 -        "g={}\n"                                               
+      57 -        "exec(open(\"%s\").read(), g)\n"                       
+      58 -        "print(int(g.get(\"ARENA_CELLS_X\", 20)))\n"           
+      59 -        "print(int(g.get(\"ARENA_CELLS_Y\", 20)))\n"           
+      60 -        "print(float(g.get(\"ARENA_WIDTH\",  3.0)))\n"         
+      61 -        "print(float(g.get(\"ARENA_HEIGHT\", 3.0)))\n"         
+      62 -        "rows = g.get(\"ARENA_MAP\", [])\n"                    
+      63 -        "print(len(rows))\n"                                   
+      64 -        "for r in reversed(rows):\n"                           
+      65 -        "    print(r)\n",                                      
+      66 -        pch_script);                                           
+      67 -    fclose(fw);                                                
+      68 -                                                               
+      69 -    char cmd[256];                                             
+      70 -    snprintf(cmd, sizeof(cmd), "python3 %s < /dev/null", tmpPat
+         -h);                                                            
+      71 -    FILE* f = popen(cmd, "r");                                 
+      72 -    if (!f) { fprintf(stderr, "[IRI1] Cannot run arena reader\n
+         -"); return; }                                                  
+      73 -                                                               
+      74 -    char line[512];                                            
+      75 -                                                               
+     … 32 more lines (ctrl+o to expand)
+  ⎿  Updated experiments/iri1exp.h (+0 -1)
+      32                  double m_fArenaHeight;
+      33                  char*  m_pchHeightMap;
+      34  
+      35 -                void ReadArenaConfig(const char* pch_script);  
+      35  
+      36                  /* Extra */
+      37                  int m_nRobotsNumber;
+  ⎿  Updated controllers/pythoncontrollerbase.cpp (+59 -0)
+       4  
+       5  #include <cstdio>
+       6  #include <cstring>
+       7 +#include <cstdlib>                                             
+       8  #include <unistd.h>
+       9  #include <signal.h>
+      10  #include <iostream>
+     ...
+      120  
+      121  /*************************************************************
+           *****************/
+      122  /*************************************************************
+           *****************/
+      123 +                                                              
+      124 +char* CPythonControllerBase::ReadArenaConfig(const char* pch_s
+          +cript,                                                        
+      125 +                                              int& n_cells_x, 
+          +int& n_cells_y,                                               
+      126 +                                              double& f_width,
+          + double& f_height)                                            
+      127 +{                                                             
+      128 +    n_cells_x = n_cells_y = 20;                               
+      129 +    f_width = f_height = 3.0;                                 
+      130 +                                                              
+      131 +    /* Write a temporary Python reader script */              
+      132 +    const char* tmpPath = "/tmp/irsim_arena_reader.py";       
+      133 +    FILE* fw = fopen(tmpPath, "w");                           
+      134 +    if (!fw) { fprintf(stderr, "[PythonController] Cannot writ
+          +e arena reader\n"); return NULL; }                            
+      135 +                                                              
+      136 +    fprintf(fw,                                               
+      137 +        "g={}\n"                                              
+      138 +        "exec(open(\"%s\").read(), g)\n"                      
+      139 +        "print(int(g.get(\"ARENA_CELLS_X\", 20)))\n"          
+      140 +        "print(int(g.get(\"ARENA_CELLS_Y\", 20)))\n"          
+      141 +        "print(float(g.get(\"ARENA_WIDTH\",  3.0)))\n"        
+      142 +        "print(float(g.get(\"ARENA_HEIGHT\", 3.0)))\n"        
+      143 +        "rows = g.get(\"ARENA_MAP\", [])\n"                   
+      144 +        "print(len(rows))\n"                                  
+      145 +        "for r in reversed(rows):\n"                          
+      146 +        "    print(r)\n",                                     
+      147 +        pch_script);                                          
+      148 +    fclose(fw);                                               
+      149 +                                                              
+      150 +    char cmd[256];                                            
+      151 +    snprintf(cmd, sizeof(cmd), "python3 %s < /dev/null", tmpPa
+          +th);                                                          
+      152 +    FILE* f = popen(cmd, "r");                                
+     … 28 more lines (ctrl+o to expand)
+
+● Step 2: create the subsumption bridge class.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Update(controllers/pythoniri1controller.h)
+  ⎿  Added 1 line
+      46      CEncoderSensor*        m_seEncoder;
+      47      CCompassSensor*        m_seCompass;
+      48  
+      49 +protected:                                                     
+      50      int m_nWriteToFile;
+      51  };
+      52  
+
+● Write(controllers/pythonsubsumptioncontroller.h)
+  ⎿  Wrote 29 lines to controllers/pythonsubsumptioncontroller.h
+       1 #ifndef PYTHONSUBSUMPTIONCONTROLLER_H_
+       2 #define PYTHONSUBSUMPTIONCONTROLLER_H_
+       3 
+       4 /***************************************************************
+         ***************/
+       5 /***************************************************************
+         ***************/
+       6 
+       7 #include "pythoniri1controller.h"
+       8 
+     … +21 lines (ctrl+o to expand)
+
+● Write(controllers/pythonsubsumptioncontroller.cpp)
+  ⎿  Wrote 38 lines to controllers/pythonsubsumptioncontroller.cpp
+       1 
+       2 /******************* INCLUDES ******************/
+       3 /***********************************************/
+       4 
+       5 #include <cstdio>
+       6 #include "pythonsubsumptioncontroller.h"
+       7 
+       8 using namespace std;
+       9 
+      10 /***************************************************************
+     … +29 lines (~1 KB) (ctrl+o to expand)
+
+● Bash(sed -i 's/^\(\t*\)pythoniri1controller.cpp
+      \\$/&\n\1pythonsubsumptioncontroller.cpp \\/' controllers/Makefile.am &&
+      grep -n python controllers/Makefile.am)
+  ⎿  5:libcontrollers_a_SOURCES =    pythoncontrollerbase.cpp \
+     6:
+     pythonwheelscontroller.cpp \
+     7:
+     pythoncontactcontroller.cpp \
+     … +11 lines (ctrl+o to expand)
+  ⎿  Updated controllers/Makefile.am (+1 -0)
+      15                                                                 
+           pythonencodercontroller.cpp \
+      16                                                                 
+           pythoncompasscontroller.cpp \
+      17                                                                 
+           pythoniri1controller.cpp \
+      18 +                                                               
+         + pythonsubsumptioncontroller.cpp \                             
+      19                                                                 
+           testwheelscontroller.cpp \
+      20                                                                 
+                                                           testlightcontr
+          oller.cpp \
+      21                                                                 
+                                                           testswitchligh
+          tcontroller.cpp \
+
+● Step 3: switch experiments 22 and 23 to the Python controllers. The arena
+  comes from the Python file and the param file is parsed exactly as before.
+
+● Bash(python3 - <<'EOF'
+      for name, cls, script, oldctl in […)
+  ⎿   controllers/Makefile.am               |   1 +
+      controllers/pythoncontrollerbase.cpp  |  59 ++++++++++
+      controllers/pythoncontrollerbase.h    |   6 +
+     … +12 lines (ctrl+o to expand)
+  ⎿  Updated experiments/subsumptionlightexp.h (+7 -0)
+      24          void Reset(); 
+      25  private:
+      26                  /* VARIABLES*/
+      27 +                /* Arena layout (read from Python) */          
+      28 +                int    m_nArenaCellsX;                         
+      29 +                int    m_nArenaCellsY;                         
+      30 +                double m_fArenaWidth;                          
+      31 +                double m_fArenaHeight;                         
+      32 +                char*  m_pchHeightMap;                         
+      33 +                                                               
+      34                  /* Extra */
+      35                  int m_nRobotsNumber;
+      36                  int m_nWriteToFile;
+  ⎿  Updated experiments/subsumptionlightexp.cpp (+12 -28)
+      35  #include "wheelsactuator.h"
+      36  
+      37  /******************** Controllers **************/
+      38 -#include "subsumptionlightcontroller.h"                        
+      38 +#include "pythonsubsumptioncontroller.h"                       
+      39  
+      40  using namespace std;
+      41  
+      42 -/*Create Arena */                                              
+      43 -static const char* pchHeightMap =                              
+      44 -"%%%%%%%%%%%%%%%%%%%%"                                         
+      45 -"%##################%"                                         
+      46 -"%######%%%#########%"                                         
+      47 -"%##################%"                                         
+      48 -"%##################%"                                         
+      49 -"%##################%"                                         
+      50 -"%############%%%###%"                                         
+      51 -"%##################%"                                         
+      52 -"%##%%%%############%"                                         
+      53 -"%##################%"                                         
+      54 -"%##################%"                                         
+      55 -"%##########%%%%%###%"                                         
+      56 -"%##################%"                                         
+      57 -"%##################%"                                         
+      58 -"%##################%"                                         
+      59 -"%##################%"                                         
+      60 -"%###%%%#####%%%%###%"                                         
+      61 -"%##################%"                                         
+      62 -"%##################%"                                         
+      63 -"%%%%%%%%%%%%%%%%%%%%";                                        
+      64 -                                                               
+      65 -                                                               
+      42  extern gsl_rng* rng;
+      43  extern long int rngSeed;
+      44  
+     ...
+      48  CSubsumptionLightExp::CSubsumptionLightExp(const char* pch_name
+          , const char* paramsFile) :
+      49          CExperiment(pch_name, COLLISION_MODEL_SIMPLE, COLLISION
+          _HANDLER_POSITION)
+      50  {
+      51 +        /* Arena layout always comes from the Python file */   
+      52 +        m_pchHeightMap = CPythonControllerBase::ReadArenaConfig
+         +("python/subsumption_light_controller.py",                     
+     … 41 more lines (ctrl+o to expand)
+  ⎿  Updated experiments/subsumptiongarbageexp.h (+7 -0)
+      24          void Reset(); 
+      25  private:
+      26                  /* VARIABLES*/
+      27 +                /* Arena layout (read from Python) */          
+      28 +                int    m_nArenaCellsX;                         
+      29 +                int    m_nArenaCellsY;                         
+      30 +                double m_fArenaWidth;                          
+      31 +                double m_fArenaHeight;                         
+      32 +                char*  m_pchHeightMap;                         
+      33 +                                                               
+      34                  /* Extra */
+      35                  int m_nRobotsNumber;
+      36                  int m_nWriteToFile;
+  ⎿  Updated experiments/subsumptiongarbageexp.cpp (+12 -49)
+      35  #include "wheelsactuator.h"
+      36  
+      37  /******************** Controllers **************/
+      38 -#include "subsumptiongarbagecontroller.h"                      
+      38 +#include "pythonsubsumptioncontroller.h"                       
+      39  
+      40  using namespace std;
+      41  
+      42 -/*Create Arena */                                              
+      43 -static const char* pchHeightMap =                              
+      44 -"%%%%%%%%%%%%%%%%%%%%"                                         
+      45 -"%##################%"                                         
+      46 -"%##################%"                                         
+      47 -"%##################%"                                         
+      48 -"%##################%"                                         
+      49 -"%##################%"                                         
+      50 -"%##################%"                                         
+      51 -"%##################%"                                         
+      52 -"%##################%"                                         
+      53 -"%##################%"                                         
+      54 -"%##################%"                                         
+      55 -"%##################%"                                         
+      56 -"%##################%"                                         
+      57 -"%##################%"                                         
+      58 -"%##################%"                                         
+      59 -"%##################%"                                         
+      60 -"%##################%"                                         
+      61 -"%##################%"                                         
+      62 -"%##################%"                                         
+      63 -"%%%%%%%%%%%%%%%%%%%%";                                        
+      64 -                                                               
+      65 -//"%%%%%%%%%%%%%%%%%%%%"                                       
+      66 -//"%##################%"                                       
+      67 -//"%##################%"                                       
+      68 -//"%##########%#######%"                                       
+      69 -//"%##########%#######%"                                       
+      70 -//"%#%%%######%#######%"                                       
+      71 -//"%############%%%###%"                                       
+      72 -//"%##################%"                                       
+      73 -//"%##########%#######%"                                       
+     … 62 more lines (ctrl+o to expand)
+
+● Three Python and output files show changes I didn't make, likely from you
+  after yesterday's commit, so I'm leaving them alone while I pull the original
+  Python versions from git.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● The Python map is drawn top row first, but the C++ string starts at the bottom
+  row. So I'll write the light map reversed, which keeps the physical arena
+  identical to the original C++ experiment.
+
+● Write(python/subsumption_light_controller.py)
+  ⎿  Wrote 276 lines to python/subsumption_light_controller.py
+       1 import sys
+       2 import math
+       3 
+       4 # --- LED color constants ---
+       5 LED_BLACK  = 0
+       6 LED_RED    = 1
+       7 LED_GREEN  = 2
+       8 LED_BLUE   = 3
+       9 LED_YELLOW = 4
+      10 LED_WHITE  = 5
+     … +266 lines (ctrl+o to expand)
+
+● Now the garbage controller. It has the same structure, plus the Forage
+  behaviour, the battery→forage inhibitor, and the slow-down near the light in
+  Navigate.
+
+● Bash(python3 - <<'EOF'
+      s=open('python/subsumption_light_controller.py').read()…)
+  ⎿  ok
+  ⎿  Created python/subsumption_garbage_controller.py (+320 -0)
+        1 +import sys                                                    
+        2 +import math                                                   
+        3 +                                                              
+        4 +# --- LED color constants ---                                 
+        5 +LED_BLACK  = 0                                                
+        6 +LED_RED    = 1                                                
+        7 +LED_GREEN  = 2                                                
+        8 +LED_BLUE   = 3                                                
+        9 +LED_YELLOW = 4                                                
+       10 +LED_WHITE  = 5                                                
+       11 +                                                              
+       12 +# ============================================================
+       13 +# ARENA CONFIGURATION (edit to change the environment)        
+       14 +# Lights, ground areas, robots and sensors come from the param
+          + file                                                         
+       15 +# (e.g. paramFiles/subExamples/paramFileSubsumptionGarbage.txt
+          +)                                                             
+       16 +# ============================================================
+       17 +ARENA_CELLS_X = 20      # grid columns (arena width discretisa
+          +tion)                                                         
+       18 +ARENA_CELLS_Y = 20      # grid rows    (arena height discretis
+          +ation)                                                        
+       19 +ARENA_WIDTH   = 3.0     # arena width  in metres              
+       20 +ARENA_HEIGHT  = 3.0     # arena height in metres              
+       21 +                                                              
+       22 +# Map layout: list of ARENA_CELLS_Y strings, each ARENA_CELLS_
+          +X characters.                                                 
+       23 +# % = wall (obstacle),  # = free space.  First string = top ro
+          +w of the arena.                                               
+       24 +ARENA_MAP = [                                                 
+       25 +    "%%%%%%%%%%%%%%%%%%%%",                                   
+       26 +    "%##################%",                                   
+       27 +    "%##################%",                                   
+       28 +    "%##################%",                                   
+       29 +    "%##################%",                                   
+       30 +    "%##################%",                                   
+       31 +    "%##################%",                                   
+       32 +    "%##################%",                                   
+       33 +    "%##################%",                                   
+       34 +    "%##################%",                                   
+       35 +    "%##################%",                                   
+       36 +    "%##################%",                                   
+       37 +    "%##################%",                                   
+       38 +    "%##################%",                                   
+       39 +    "%##################%",                                   
+       40 +    "%##################%",                                   
+     … 280 more lines (ctrl+o to expand)
+  ⎿  … 2 more files changed
+
+● Both files compile. Now I'll build. controllers/Makefile.am changed, so the
+  Makefiles need regenerating.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● The build is clean; the only warnings are the existing unused-return ones. Now
+  I'll test headless. Let me check the param files first.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● outputFiles/ already has data from your runs, so I'll test in scratch folders.
+  I'm also building the original C++ version from git to compare outputs under
+  the same seed.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Both versions ran to completion and wrote the same files with the same number
+  of lines. Now I'll compare the contents.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● The first comparison shows three kinds of differences. Let me check the
+  garbage param file before deciding which ones matter.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Experiment 23 loaded experiment 22's map because both Python runs wrote the
+  same shared temp file at once, a race that predates this test; I'm making the
+  temp file unique per process. The C++ code also resets only the "active"
+  column of the activation table each step, so I'm keeping the table between
+  steps to match the logs.
+
+● Bash(python3 - <<'EOF'
+      p='controllers/pythoncontrollerbase.cpp'; s=open(p).read()…)
+  ⎿  python/subsumption_light_controller.py:117:        activation_table[pr
+     iority][:] = [v_linear - c1 * v_angular,
+     python/subsumption_light_controller.py:160:    activation_table[priori
+     … +9 lines (ctrl+o to expand)
+  ⎿  Updated controllers/pythoncontrollerbase.cpp (+5 -2)
+      128      n_cells_x = n_cells_y = 20;
+      129      f_width = f_height = 3.0;
+      130  
+      131 -    /* Write a temporary Python reader script */              
+      132 -    const char* tmpPath = "/tmp/irsim_arena_reader.py";       
+      131 +    /* Write a temporary Python reader script (one per process
+          +, so several                                                  
+      132 +       simulators can start at the same time) */              
+      133 +    char tmpPath[64];                                         
+      134 +    snprintf(tmpPath, sizeof(tmpPath), "/tmp/irsim_arena_reade
+          +r_%d.py", (int) getpid());                                    
+      135      FILE* fw = fopen(tmpPath, "w");
+      136      if (!fw) { fprintf(stderr, "[PythonController] Cannot writ
+           e arena reader\n"); return NULL; }
+      137  
+     ...
+      175      }
+      176  
+      177      pclose(f);
+      178 +    unlink(tmpPath);                                          
+      179      return pchMap;
+      180  }
+      181  
+  ⎿  Updated python/subsumption_light_controller.py (+8 -4)
+      78  # Set every step from the param file (WRITE TO FILE)
+      79  write_to_file = 0
+      80  
+      81 +# [left_speed, right_speed, active] for each level of competenc
+         +e.                                                             
+      82 +# Only "active" is reset every step (as in the C++ controller) 
+      83 +activation_table = [[0.0, 0.0, 0.0] for _ in range(BEHAVIORS)] 
+      84  
+      85 +                                                               
+      86  def write_output(filename, text):
+      87      """Append a line to outputFiles/<filename> (only if WRITE T
+          O FILE = 1)."""
+      88      if write_to_file:
+     ...
+      114          v_linear  = SPEED * c_linear * math.cos(repelent / 2)
+      115          v_angular = repelent
+      116  
+      113 -        activation_table[priority] = [v_linear - c1 * v_angula
+          -r,                                                            
+      117 +        activation_table[priority][:] = [v_linear - c1 * v_ang
+          +ular,                                                         
+      118                                        v_linear + c1 * v_angula
+           r,
+      119                                        1.0]
+      120  
+     ...
+      157  
+      158  def navigate(priority, activation_table, time):
+      159      """Go straight."""
+      156 -    activation_table[priority] = [SPEED, SPEED, 1.0]          
+      160 +    activation_table[priority][:] = [SPEED, SPEED, 1.0]       
+      161  
+      162      left, right, active = activation_table[priority]
+      163      write_output("navigateOutput", f"{time:2.4f} {active:2.4f}
+            {left:2.4f} {right:2.4f} ")
+     ...
+      195      switch_light, switch_blue, switch_red : None (not used)
+      196      leds : list with one LED color for all LEDs
+      197      """
+      194 -    # [left_speed, right_speed, active] for each level of comp
+          -etence                                                        
+      195 -    activation_table = [[0.0, 0.0, 0.0] for _ in range(BEHAVIO
+          -RS)]                                                          
+      198 +    for behavior in activation_table:                         
+      199 +        behavior[2] = 0.0                                     
+      200  
+      201      # Execute the levels of competence. LEDs: the last behavio
+           r that sets them wins
+      202      leds = LED_BLACK
+  ⎿  Updated python/subsumption_garbage_controller.py (+9 -5)
+      80  # Set every step from the param file (WRITE TO FILE)
+      81  write_to_file = 0
+      82  
+      83 +# [left_speed, right_speed, active] for each level of competenc
+         +e.                                                             
+      84 +# Only "active" is reset every step (as in the C++ controller) 
+      85 +activation_table = [[0.0, 0.0, 0.0] for _ in range(BEHAVIORS)] 
+      86  
+      87 +                                                               
+      88  def write_output(filename, text):
+      89      """Append a line to outputFiles/<filename> (only if WRITE T
+          O FILE = 1)."""
+      90      if write_to_file:
+     ...
+      116          v_linear  = SPEED * c_linear * math.cos(repelent / 2)
+      117          v_angular = repelent
+      118  
+      115 -        activation_table[priority] = [v_linear - c1 * v_angula
+          -r,                                                            
+      119 +        activation_table[priority][:] = [v_linear - c1 * v_ang
+          +ular,                                                         
+      120                                        v_linear + c1 * v_angula
+           r,
+      121                                        1.0]
+      122  
+     ...
+      195      total_light = sum(light)
+      196  
+      197      if total_light >= NAVIGATE_LIGHT_THRESHOLD:
+      194 -        activation_table[priority] = [SPEED / 4, SPEED / 4, 1.
+          -0]                                                            
+      198 +        activation_table[priority][:] = [SPEED / 4, SPEED / 4,
+          + 1.0]                                                         
+      199      else:
+      196 -        activation_table[priority] = [SPEED, SPEED, 1.0]      
+      200 +        activation_table[priority][:] = [SPEED, SPEED, 1.0]   
+      201  
+      202      left, right, active = activation_table[priority]
+      203      write_output("navigateOutput", f"{time:2.4f} {total_light:
+           2.4f} {active:2.4f} {left:2.4f} {right:2.4f}")
+     ...
+      235      switch_light, switch_blue, switch_red : None (not used)
+      236      leds : list with one LED color for all LEDs
+      237      """
+      234 -    # [left_speed, right_speed, active] for each level of comp
+          -etence                                                        
+      235 -    activation_table = [[0.0, 0.0, 0.0] for _ in range(BEHAVIO
+          -RS)]                                                          
+      238 +    for behavior in activation_table:                         
+      239 +        behavior[2] = 0.0                                     
+      240  
+      241      # Release inhibitors
+      242      inhibitors = {"batt_to_forage": 1.0}
+
+● Rebuilding, then rerunning the comparison, this time with both experiments
+  starting together on purpose to confirm the temp-file fix.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● The map race is fixed and the leftover reader file is from older runs. The
+  remaining drift comes from the C++ repellent angle being stored as
+  single-precision float, so I'll mirror that rounding in Python.
+  Ran 1 shell command (ctrl+o to expand)
+
+● Bash(python3 - <<'EOF'
+      for n in ('light','garbage'):…)
+  ⎿  [1]-  Done                    run $S/t22py $P/irsim 22 paramFiles/subE
+     xamples/paramFileSubsumptionLight.txt
+     [2]+  Done                    run $S/t23py $P/irsim 23 paramFiles/subE
+     … +36 lines (ctrl+o to expand)
+  ⎿  Updated python/subsumption_light_controller.py (+14 -7)
+      1  import sys
+      2  import math
+      3 +import struct                                                   
+      4  
+      5  # --- LED color constants ---
+      6  LED_BLACK  = 0
+     ...
+      84  activation_table = [[0.0, 0.0, 0.0] for _ in range(BEHAVIORS)]
+      85  
+      86  
+      87 +def f32(x):                                                    
+      88 +    """Round to single precision, like a C++ float."""         
+      89 +    return struct.unpack("f", struct.pack("f", x))[0]          
+      90 +                                                               
+      91 +                                                               
+      92  def write_output(filename, text):
+      93      """Append a line to outputFiles/<filename> (only if WRITE T
+          O FILE = 1)."""
+      94      if write_to_file:
+     ...
+      105      repelent_y = sum(p * math.sin(d) for p, d in zip(prox, PRO
+           X_DIRECTIONS))
+      106      max_prox   = max(max(prox), 0.0)
+      107  
+      102 -    # Repelent angle, normalised to [-pi, pi]                 
+      103 -    repelent = math.atan2(repelent_y, repelent_x) - math.pi   
+      108 +    # Repelent angle, normalised to [-pi, pi] (a float in the 
+          +C++ controller)                                               
+      109 +    repelent = f32(math.atan2(repelent_y, repelent_x))        
+      110 +    repelent = f32(repelent - math.pi)                        
+      111      while repelent > math.pi:
+      105 -        repelent -= 2 * math.pi                               
+      112 +        repelent = f32(repelent - 2 * math.pi)                
+      113      while repelent < -math.pi:
+      107 -        repelent += 2 * math.pi                               
+      114 +        repelent = f32(repelent + 2 * math.pi)                
+      115  
+      116      if max_prox > PROXIMITY_THRESHOLD:
+      117          leds = LED_GREEN
+      118  
+      119          c_linear = 1.0
+      120          c1       = SPEED / math.pi
+      114 -        v_linear  = SPEED * c_linear * math.cos(repelent / 2) 
+      121 +        v_linear  = SPEED * c_linear * f32(math.cos(repelent /
+          + 2))                                                          
+      122          v_angular = repelent
+     … 9 more lines (ctrl+o to expand)
+  ⎿  Updated python/subsumption_garbage_controller.py (+14 -7)
+      1  import sys
+      2  import math
+      3 +import struct                                                   
+      4  
+      5  # --- LED color constants ---
+      6  LED_BLACK  = 0
+     ...
+      86  activation_table = [[0.0, 0.0, 0.0] for _ in range(BEHAVIORS)]
+      87  
+      88  
+      89 +def f32(x):                                                    
+      90 +    """Round to single precision, like a C++ float."""         
+      91 +    return struct.unpack("f", struct.pack("f", x))[0]          
+      92 +                                                               
+      93 +                                                               
+      94  def write_output(filename, text):
+      95      """Append a line to outputFiles/<filename> (only if WRITE T
+          O FILE = 1)."""
+      96      if write_to_file:
+     ...
+      107      repelent_y = sum(p * math.sin(d) for p, d in zip(prox, PRO
+           X_DIRECTIONS))
+      108      max_prox   = max(max(prox), 0.0)
+      109  
+      104 -    # Repelent angle, normalised to [-pi, pi]                 
+      105 -    repelent = math.atan2(repelent_y, repelent_x) - math.pi   
+      110 +    # Repelent angle, normalised to [-pi, pi] (a float in the 
+          +C++ controller)                                               
+      111 +    repelent = f32(math.atan2(repelent_y, repelent_x))        
+      112 +    repelent = f32(repelent - math.pi)                        
+      113      while repelent > math.pi:
+      107 -        repelent -= 2 * math.pi                               
+      114 +        repelent = f32(repelent - 2 * math.pi)                
+      115      while repelent < -math.pi:
+      109 -        repelent += 2 * math.pi                               
+      116 +        repelent = f32(repelent + 2 * math.pi)                
+      117  
+      118      if max_prox > PROXIMITY_THRESHOLD:
+      119          leds = LED_GREEN
+      120  
+      121          c_linear = 1.0
+      122          c1       = SPEED / math.pi
+      116 -        v_linear  = SPEED * c_linear * math.cos(repelent / 2) 
+      123 +        v_linear  = SPEED * c_linear * f32(math.cos(repelent /
+          + 2))                                                          
+      124          v_angular = repelent
+     … 9 more lines (ctrl+o to expand)
+  ⎿  (timeout 8m 20s)
+
+● The ±π edge matches now, and the remaining 2e-4 speed gap comes from the
+  bridge's %f formatting, which drops precision. I'm switching it to full double
+  precision next, which also covers IRI1.
+
+● Bash(sed -i 's/" %f", /" %.17g", /; s/" %f %f",$/" %.17g %.17g",/'
+      controllers/pythoniri1controller.cpp && sed -i 's/" %f %d",/" %.17g %d",/'
+      controllers/pythonsubsu…)
+  ⎿  controllers/pythoniri1controller.cpp:13
+     controllers/pythonsubsumptioncontroller.cpp:1
+  ⎿  Updated controllers/pythoniri1controller.cpp (+13 -13)
+       58  
+       59      double* prox = m_seProx->GetSensorReading(m_pcEpuck);
+       60      for (i = 0; i < m_seProx->GetNumberOfInputs(); i++)
+       61 -        len += snprintf(buf + len, 4096 - len, " %f", prox[i])
+          -;                                                             
+       61 +        len += snprintf(buf + len, 4096 - len, " %.17g", prox[
+          +i]);                                                          
+       62  
+       63      double* light = m_seLight->GetSensorReading(m_pcEpuck);
+       64      for (i = 0; i < m_seLight->GetNumberOfInputs(); i++)
+       65 -        len += snprintf(buf + len, 4096 - len, " %f", light[i]
+          -);                                                            
+       65 +        len += snprintf(buf + len, 4096 - len, " %.17g", light
+          +[i]);                                                         
+       66  
+       67      double* bluelight = m_seBlueLight->GetSensorReading(m_pcEp
+           uck);
+       68      for (i = 0; i < m_seBlueLight->GetNumberOfInputs(); i++)
+       69 -        len += snprintf(buf + len, 4096 - len, " %f", blueligh
+          -t[i]);                                                        
+       69 +        len += snprintf(buf + len, 4096 - len, " %.17g", bluel
+          +ight[i]);                                                     
+       70  
+       71      double* redlight = m_seRedLight->GetSensorReading(m_pcEpuc
+           k);
+       72      for (i = 0; i < m_seRedLight->GetNumberOfInputs(); i++)
+       73 -        len += snprintf(buf + len, 4096 - len, " %f", redlight
+          -[i]);                                                         
+       73 +        len += snprintf(buf + len, 4096 - len, " %.17g", redli
+          +ght[i]);                                                      
+       74  
+       75      double* contact = m_seContact->GetSensorReading(m_pcEpuck)
+           ;
+       76      for (i = 0; i < m_seContact->GetNumberOfInputs(); i++)
+       77 -        len += snprintf(buf + len, 4096 - len, " %f", contact[
+          -i]);                                                          
+       77 +        len += snprintf(buf + len, 4096 - len, " %.17g", conta
+          +ct[i]);                                                       
+       78  
+       79      double* ground = m_seGround->GetSensorReading(m_pcEpuck);
+       80      for (i = 0; i < m_seGround->GetNumberOfInputs(); i++)
+       81 -        len += snprintf(buf + len, 4096 - len, " %f", ground[i
+          -]);                                                           
+       81 +        len += snprintf(buf + len, 4096 - len, " %.17g", groun
+          +d[i]);                                                        
+       82  
+       83      double* gmem = m_seGroundMemory->GetSensorReading(m_pcEpuc
+           k);
+       84      for (i = 0; i < m_seGroundMemory->GetNumberOfInputs(); i++
+           )
+       85 -        len += snprintf(buf + len, 4096 - len, " %f", gmem[i])
+          -;                                                             
+       85 +        len += snprintf(buf + len, 4096 - len, " %.17g", gmem[
+          +i]);                                                          
+       86  
+       87      double* battery = m_seBattery->GetSensorReading(m_pcEpuck)
+           ;
+       88      for (i = 0; i < m_seBattery->GetNumberOfInputs(); i++)
+       89 -        len += snprintf(buf + len, 4096 - len, " %f", battery[
+          -i]);                                                          
+       89 +        len += snprintf(buf + len, 4096 - len, " %.17g", batte
+          +ry[i]);                                                       
+     … 27 more lines (ctrl+o to expand)
+  ⎿  Updated controllers/pythonsubsumptioncontroller.cpp (+1 -1)
+      30  {
+      31      CPythonIri1Controller::appendSensorData(buf, len);
+      32  
+      33 -    len += snprintf(buf + len, 4096 - len, " %f %d",           
+      33 +    len += snprintf(buf + len, 4096 - len, " %.17g %d",        
+      34                      m_pcEpuck->GetRotation(), m_nWriteToFile);
+      35  }
+      36  
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● The trajectories now match the original C++ controllers across both 10,000 s
+  runs, with only one proximity reading differing, and it falls below the
+  decision threshold. I'm checking that IRI1 (exp 30) still works after the
+  refactor, and that 22/23 start through simulator.py without a param file.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● All five runs finished cleanly, including 22 through simulator.py. I'm
+  updating the README to list 22 and 23 in the Python section, then cleaning up
+  the test build.
+
+● Bash(python3 - <<'EOF'
+      p='README'; s=open(p).read()…)
+  ⎿   M README
+      M controllers/Makefile.am
+      M controllers/pythoncontrollerbase.cpp
+     … +23 lines (ctrl+o to expand)
+  ⎿  Updated README (+36 -5)
+      2  =======
+      3  
+      4  irsimPy is the IRSIM e-puck robot simulator (C++) with a Python 
+         bridge: the
+      5 -robot controllers of the test experiments (1-11) and of IRI1 (30
+        -) are written                                                   
+      6 -in Python, so you can program the robot without touching or reco
+        -mpiling C++.                                                    
+      5 +robot controllers of the test experiments (1-11), the subsumptio
+        +n experiments                                                   
+      6 +(22, 23) and IRI1 (30) are written in Python, so you can program
+        + the robot without touching or recompiling C++.                 
+      7  
+      8  This README has two parts:
+      9  
+     ...
+      72     9  Test Battery Sensor    python/battery_controller.py      
+          battery (1)
+      73    10  Test Encoder Sensor    python/encoder_controller.py      
+          encoder (2), RobotSim_pos_x/y
+      74    11  Test Compass Sensor    python/compass_controller.py      
+          encoder (2), compass (1)
+      75 +  22  Subsumption Light      python/subsumption_light_controlle
+         +r.py    all sensors (see below)                                
+      76 +  23  Subsumption Garbage    python/subsumption_garbage_control
+         +ler.py  all sensors (see below)                                
+      77    30  IRI1                   python/iri1_controller.py         
+          all sensors (see below)
+      78  
+      79  
+     ...
+      101        speeds in [-1000, 1000]
+      102    * Experiment 7 (switch light):  return left_speed, right_spe
+           ed, switch_cmd
+      103        switch_cmd: 1 = switch nearest light ON, 0 = OFF, None =
+            no action
+      102 -  * Experiment 30 (IRI1):                                     
+      104 +  * Experiments 22, 23 (subsumption) and 30 (IRI1):           
+      105        return left_speed, right_speed, switch_light, switch_blu
+           e, switch_red, leds
+      106        switch_*: 1 = ON, 0 = OFF, None = no action (nearest lig
+           ht of that color)
+      107        leds:     None (no change), a single value [LED_RED] app
+           lied to all 8
+     ...
+      185  no lights and no ground areas.
+      186  
+      187  
+      188 +Subsumption (experiments 22 and 23)                           
+      189 +-----------------------------------                           
+      190 +                                                              
+      191 +Python versions of the C++ subsumption controllers, with the s
+          +ame behaviors,                                                
+      192 +thresholds and output files. They use the same param files as 
+          +the C++ version:                                              
+      193 +                                                              
+      194 +  python3 python/simulator.py -E 22 -p paramFiles/subExamples/
+          +paramFileSubsumptionLight.txt                                 
+      195 +  python3 python/simulator.py -E 23 -p paramFiles/subExamples/
+          +paramFileSubsumptionGarbage.txt                               
+      196 +                                                              
+      197 +  (or ./irsim with the same arguments)                        
+      198 +                                                              
+     … 31 more lines (ctrl+o to expand)
+
+● Bash(rm python/__pycache__/subsumption_*_controller.cpython-312.pyc && git
+      diff --stat -- . ':!outputFiles' ':!python/switchlight_controller.py'
+      ':!python/wheels_con…)
+  ⎿   README                                | 41 ++++++++++++++++++++---
+      controllers/Makefile.am               |  1 +
+      controllers/pythoncontrollerbase.cpp  | 62 ++++++++++++++++++++++++++
+     … +13 lines (ctrl+o to expand)
+  ⎿  2 files changed (binary, mode only or too large to show)
+
+● Experiments 22 and 23 now run Python controllers and read the same param files
+  as before:
+
+  ./irsim -E 22 -p paramFiles/subExamples/paramFileSubsumptionLight.txt
+  ./irsim -E 23 -p paramFiles/subExamples/paramFileSubsumptionGarbage.txt
+
+  The same commands work with python3 python/simulator.py. It's built and
+  tested.
+
+  Testing: I built the original C++ version from git and ran both versions
+  headless for the full 10,000 s, with the same seed. Positions, wheel speeds,
+  chosen behaviours and every output file match to the last printed decimal
+  (±0.0001). The only bigger difference was one proximity reading below the 0.3
+  threshold, which changed no decision. IRI1 (exp 30) still runs with and
+  without a param file, and 22/23 also start without one.
+
+  What I added:
+  - python/subsumption_light_controller.py: Obstacle avoidance, Go load and
+    Navigate, plus the coordinator.
+  - python/subsumption_garbage_controller.py: the same plus Forage, the
+    inhibitor that turns Forage off while the battery is low, and the slow-down
+    near the light.
+  - In both files:
+    - The thresholds, speeds and LED colours (green, red, blue) are the same as
+      in C++.
+    - With WRITE TO FILE = 1 they write the same outputFiles/ files in the same
+      format.
+    - The arena map is at the top of the file, like IRI1. I copied each map from
+      the C++ file, so the walls are in the same places.
+  - C++ bridge controllers/pythonsubsumptioncontroller.*: it reuses the IRI1
+    bridge, which sends all sensors and handles wheels, lights and LEDs. It also
+    sends the robot orientation and the WRITE TO FILE flag, because the output
+    files need them.
+  - Experiments 22/23: the param file is read exactly as before. The C++
+    subsumption controllers are still in controllers/ but no longer used, the
+    same as experiments 1–11 and 30.
+
+  Changes that affect IRI1 too:
+  - Map loading: I moved the map-reading code into the shared bridge so IRI1, 22
+    and 23 use one copy.
+  - Map bug fixed: the map reader always used the same temp file, so two
+    simulators starting at the same time could load each other's map. My
+    parallel test hit this. It now uses one temp file per process and deletes it
+    afterwards.
+  - Precision: the bridge used to send sensor values with only 6 decimals. It
+    now sends full precision, which was needed for the results to match C++
+    exactly.
+
+  Python details that look odd but are deliberate:
+  - f32() rounds the avoidance angle the way the C++ float does.
+  - The activation table is kept between steps because the C++ code only resets
+    the "active" column, which affects what gets logged.
+
+  The README now lists 22/23 in the Python part and explains how they work.
+
+  I didn't commit anything. outputFiles/*, python/switchlight_controller.py and
+  python/wheels_controller.py have changes I didn't make, so I'll leave them out
+  of the commit unless you say otherwise.
+
+✻ Churned for 8m 26s · done 11:07 AM
+
+※ recap: We're moving irsimPy's robot controllers to Python, and subsumption experiments 22 and 23 now run in Python with the same param files and results matching the C++ versions. Next step: you review and commit, leaving out the outputFiles and the two controller files you changed. (disable recaps in /config)
+
+❯ how should I test experiment 22                                               
+
+  Searched for 1 pattern (ctrl+o to expand)
+
+● Here's how I'd test it, from quickest to most thorough. Run everything from
+  the irsimPy root folder.
+
+  1. Watch it run
+
+  make            # only needed after changing C++ files
+  ./irsim -E 22 -p paramFiles/subExamples/paramFileSubsumptionLight.txt
+
+  python3 python/simulator.py -E 22 -p 
+  paramFiles/subExamples/paramFileSubsumptionLight.txt does the same.
+
+  With this param file the robot starts at (0, 0), the light is at (−1, −1), and
+  the battery drains by 0.0005 per step. You should see this sequence:
+
+  ┌───────────────────┬──────────────────────┬───────┬──────────────────────┐
+  │       When        │ What the robot does  │ LEDs  │    Terminal shows    │
+  ├───────────────────┼──────────────────────┼───────┼──────────────────────┤
+  │ Battery above 0.5 │                      │       │ 2 500.0000 500.0000  │
+  │  (about the first │ Drives straight      │ black │ (Navigate)           │
+  │  100 s)           │                      │       │                      │
+  ├───────────────────┼──────────────────────┼───────┼──────────────────────┤
+  │ Near a wall or    │ Turns away from it   │ green │ 0 … (Obstacle        │
+  │ obstacle          │                      │       │ avoidance)           │
+  ├───────────────────┼──────────────────────┼───────┼──────────────────────┤
+  │                   │ Turns towards the    │       │ 1 … while turning, 2 │
+  │ Battery below 0.5 │ light and drives to  │ red   │  once it faces the   │
+  │                   │ it                   │       │ light                │
+  ├───────────────────┼──────────────────────┼───────┼──────────────────────┤
+  │                   │ Recharges, then goes │       │                      │
+  │ Near the light    │  back to driving     │ black │ 2 …                  │
+  │                   │ straight             │       │                      │
+  └───────────────────┴──────────────────────┴───────┴──────────────────────┘
+
+  The first number on each terminal line is the behaviour that won. The other
+  two are the left and right wheel speeds.
+
+  2. Check the output files
+
+  The files are only appended to, never overwritten, and outputFiles/ already
+  has data from your earlier runs. Clear it first:
+
+  rm -f outputFiles/*
+  ./irsim -E 22 -p paramFiles/subExamples/paramFileSubsumptionLight.txt -v   # 
+  -v = no window, faster
+
+  Then look at a few columns:
+
+  # How often each behaviour won (0 = avoid, 1 = go load, 2 = navigate)
+  awk '{print $2}' outputFiles/coordinatorOutput | sort | uniq -c
+
+  # Battery over time: it should drop to about 0.5 and then go back up near the 
+  light
+  awk 'NR%500==1 {print $1, $2}' outputFiles/batteryOutput
+
+  If you have gnuplot, you can plot the path. The robot should loop between the
+  arena and the light at (−1, −1):
+
+  gnuplot -p -e "plot 'outputFiles/robotPosition' u 2:3 w l"
+
+  3. Compare with the original C++ controller
+
+  This is what I did. Build the old C++ version in a separate folder and run
+  both with the same seed (-s 1):
+
+  git worktree add /tmp/irsim_orig 3497139
+  (cd /tmp/irsim_orig && ./bootstrap.sh && ./configure && make)
+
+  mkdir -p /tmp/irsim_orig/outputFiles && rm -f /tmp/irsim_orig/outputFiles/*
+  (cd /tmp/irsim_orig && ./irsim -E 22 -p
+  paramFiles/subExamples/paramFileSubsumptionLight.txt -s 1 -v > /dev/null)
+
+  rm -f outputFiles/*
+  ./irsim -E 22 -p paramFiles/subExamples/paramFileSubsumptionLight.txt -s 1 -v
+  > /dev/null 2>&1
+
+  diff outputFiles/robotPosition /tmp/irsim_orig/outputFiles/robotPosition |
+  head
+
+  Commit 3497139 is your pushed README commit, the last one before the Python
+  version. Expect only a few lines that differ in the 4th decimal. When you're
+  done, remove the folder with git worktree remove --force /tmp/irsim_orig.
+
+  4. Try your own changes
+
+  These need no recompiling:
+  - Change a behaviour in python/subsumption_light_controller.py, for example
+    BATTERY_THRESHOLD = 0.7 or SPEED = 300, then run again.
+  - Move or add walls by editing ARENA_MAP in the same file (% is a wall).
+  - Change the light, the battery drain or the start position in the param file.
+    The C++ and Python versions read it the same way.
+
+  If the window never opens or the simulator hangs, check that you didn't add a
+  print without file=sys.stderr. Printing to stdout breaks the messages between
+  the simulator and Python.
+
+✻ Sautéed for 17s · done 11:11 AM
+
+❯ How can I test exp 22 in python mode?                                         
+
+● There's no separate Python mode. Experiment 22 now always runs the Python
+  controller python/subsumption_light_controller.py, so these two commands do
+  exactly the same thing:
+
+  ./irsim -E 22 -p paramFiles/subExamples/paramFileSubsumptionLight.txt
+  python3 python/simulator.py -E 22 -p
+  paramFiles/subExamples/paramFileSubsumptionLight.txt
+
+  simulator.py only launches ./irsim, and ./irsim then starts the Python
+  controller. Run either one from the irsimPy root folder.
+
+  To see that Python is in control, make a visible change in
+  python/subsumption_light_controller.py and run again without recompiling. For
+  example, in navigate():
+
+  activation_table[priority][:] = [SPEED, SPEED / 2, 1.0]   # was [SPEED, SPEED,
+  1.0]
+
+  The robot should now drive in circles instead of straight lines. You can also
+  add a debug line inside step():
+
+  print(f"PYTHON step {step_number}  battery={battery[0]:.3f}", file=sys.stderr)
+
+  It must go to stderr; printing to stdout breaks the messages between the
+  simulator and Python.
+
+  The original C++ subsumption controller is no longer connected to experiment
+  22. To run it, use the old build from step 3 of my previous answer (the git 
+  worktree at commit 3497139).
+
+✻ Baked for 6s · done 11:12 AM
+
+❯ I see somehting that should be solved. Now you are returning leds variable    
+  and use this variable for the activation. We cannot use it for the            
+  activation, since we need to decouple leds and activation. Lets then use the  
+  activation flag on the table (3rd column) as it is in the C software          
+
+  Searched for 1 pattern, read 1 file (ctrl+o to expand)
+
+● Speed selection already relies on the activation flag, so I'll switch the
+  behaviours to set LEDs directly through a set_all_leds() function and
+  coordinate only via activation_table, as the C++ code does.
+
+● Bash(python3 - <<'EOF'
+      import re…)
+  ⎿  87:leds = LED_BLACK
+     95:def set_all_leds(color):
+     97:    global leds
+     … +42 lines (ctrl+o to expand)
+  ⎿  Updated python/subsumption_light_controller.py (+19 -16)
+       83  # Only "active" is reset every step (as in the C++ controller)
+       84  activation_table = [[0.0, 0.0, 0.0] for _ in range(BEHAVIORS)]
+       85  
+       86 +# Color of the robot LEDs, sent to the simulator at the end of
+          + each step                                                    
+       87 +leds = LED_BLACK                                              
+       88  
+       89 +                                                              
+       90  def f32(x):
+       91      """Round to single precision, like a C++ float."""
+       92      return struct.unpack("f", struct.pack("f", x))[0]
+       93  
+       94  
+       95 +def set_all_leds(color):                                      
+       96 +    """Set all the LEDs of the robot to color (as SetAllColore
+          +dLeds in C++)."""                                             
+       97 +    global leds                                               
+       98 +    leds = color                                              
+       99 +                                                              
+      100 +                                                              
+      101  def write_output(filename, text):
+      102      """Append a line to outputFiles/<filename> (only if WRITE 
+           TO FILE = 1)."""
+      103      if write_to_file:
+     ...
+      107  
+      108  def obstacle_avoidance(priority, activation_table, time, prox)
+           :
+      109      """Turn away from the obstacles detected by the proximity 
+           sensors."""
+      101 -    leds = None                                               
+      110  
+      111      # Vector sum of the proximity readings and maximum reading
+      112      repelent_x = sum(p * math.cos(d) for p, d in zip(prox, PRO
+           X_DIRECTIONS))
+     ...
+      122          repelent = f32(repelent + 2 * math.pi)
+      123  
+      124      if max_prox > PROXIMITY_THRESHOLD:
+      117 -        leds = LED_GREEN                                      
+      125 +        set_all_leds(LED_GREEN)                               
+      126  
+      127          c_linear = 1.0
+      128          c1       = SPEED / math.pi
+     ...
+      137      write_output("avoidOutput",
+      138                   f"{time:2.4f} " + " ".join(f"{p:2.4f}" for p 
+           in prox)
+      139                   + f" {max_prox:2.4f} {repelent:2.4f} {active:
+           2.4f} {left:2.4f} {right:2.4f}")
+      132 -    return leds                                               
+     … 54 more lines (ctrl+o to expand)
+  ⎿  Updated python/subsumption_garbage_controller.py (+21 -20)
+       85  # Only "active" is reset every step (as in the C++ controller)
+       86  activation_table = [[0.0, 0.0, 0.0] for _ in range(BEHAVIORS)]
+       87  
+       88 +# Color of the robot LEDs, sent to the simulator at the end of
+          + each step                                                    
+       89 +leds = LED_BLACK                                              
+       90  
+       91 +                                                              
+       92  def f32(x):
+       93      """Round to single precision, like a C++ float."""
+       94      return struct.unpack("f", struct.pack("f", x))[0]
+       95  
+       96  
+       97 +def set_all_leds(color):                                      
+       98 +    """Set all the LEDs of the robot to color (as SetAllColore
+          +dLeds in C++)."""                                             
+       99 +    global leds                                               
+      100 +    leds = color                                              
+      101 +                                                              
+      102 +                                                              
+      103  def write_output(filename, text):
+      104      """Append a line to outputFiles/<filename> (only if WRITE 
+           TO FILE = 1)."""
+      105      if write_to_file:
+     ...
+      109  
+      110  def obstacle_avoidance(priority, activation_table, time, prox)
+           :
+      111      """Turn away from the obstacles detected by the proximity 
+           sensors."""
+      103 -    leds = None                                               
+      112  
+      113      # Vector sum of the proximity readings and maximum reading
+      114      repelent_x = sum(p * math.cos(d) for p, d in zip(prox, PRO
+           X_DIRECTIONS))
+     ...
+      124          repelent = f32(repelent + 2 * math.pi)
+      125  
+      126      if max_prox > PROXIMITY_THRESHOLD:
+      119 -        leds = LED_GREEN                                      
+      127 +        set_all_leds(LED_GREEN)                               
+      128  
+      129          c_linear = 1.0
+      130          c1       = SPEED / math.pi
+     ...
+      139      write_output("avoidOutput",
+      140                   f"{time:2.4f} " + " ".join(f"{p:2.4f}" for p 
+           in prox)
+      141                   + f" {max_prox:2.4f} {repelent:2.4f} {active:
+           2.4f} {left:2.4f} {right:2.4f}")
+      134 -    return leds                                               
+     … 75 more lines (ctrl+o to expand)
+
+● The global leds is shared with the communication loop, so it gets overwritten
+  each step; that's harmless now but fragile. I'm renaming the controller's
+  variable to robot_leds.
+
+● Bash(for f in python/subsumption_light_controller.py
+      python/subsumption_garbage_controller.py; do sed -i 's/^leds =
+      LED_BLACK$/robot_leds = LED_BLACK/; s/^    global…)
+  ⎿  python/subsumption_light_controller.py:87:robot_leds = LED_BLACK
+     python/subsumption_light_controller.py:97:    global robot_leds
+     python/subsumption_light_controller.py:98:    robot_leds = color
+     … +13 lines (ctrl+o to expand)
+  ⎿  Updated python/subsumption_light_controller.py (+4 -4)
+      84  activation_table = [[0.0, 0.0, 0.0] for _ in range(BEHAVIORS)]
+      85  
+      86  # Color of the robot LEDs, sent to the simulator at the end of 
+          each step
+      87 -leds = LED_BLACK                                               
+      87 +robot_leds = LED_BLACK                                         
+      88  
+      89  
+      90  def f32(x):
+     ...
+       94  
+       95  def set_all_leds(color):
+       96      """Set all the LEDs of the robot to color (as SetAllColore
+           dLeds in C++)."""
+       97 -    global leds                                               
+       98 -    leds = color                                              
+       97 +    global robot_leds                                         
+       98 +    robot_leds = color                                        
+       99  
+      100  
+      101  def write_output(filename, text):
+     ...
+      224                   f"{time:2.4f} {RobotSim_pos_x:2.4f} {RobotSim
+           _pos_y:2.4f} {RobotSim_orientation:2.4f}")
+      225      write_output("robotWheels", f"{time:2.4f} {left_speed:2.4f
+           } {right_speed:2.4f} ")
+      226  
+      227 -    return left_speed, right_speed, None, None, None, [leds]  
+      227 +    return left_speed, right_speed, None, None, None, [robot_l
+          +eds]                                                          
+      228  
+      229  
+      230  # --- communication loop (do not edit below this line) ---
+  ⎿  Updated python/subsumption_garbage_controller.py (+4 -4)
+      86  activation_table = [[0.0, 0.0, 0.0] for _ in range(BEHAVIORS)]
+      87  
+      88  # Color of the robot LEDs, sent to the simulator at the end of 
+          each step
+      89 -leds = LED_BLACK                                               
+      89 +robot_leds = LED_BLACK                                         
+      90  
+      91  
+      92  def f32(x):
+     ...
+       96  
+       97  def set_all_leds(color):
+       98      """Set all the LEDs of the robot to color (as SetAllColore
+           dLeds in C++)."""
+       99 -    global leds                                               
+      100 -    leds = color                                              
+       99 +    global robot_leds                                         
+      100 +    robot_leds = color                                        
+      101  
+      102  
+      103  def write_output(filename, text):
+     ...
+      266                   f"{time:2.4f} {RobotSim_pos_x:2.4f} {RobotSim
+           _pos_y:2.4f} {RobotSim_orientation:2.4f}")
+      267      write_output("robotWheels", f"{time:2.4f} {left_speed:2.4f
+           } {right_speed:2.4f} ")
+      268  
+      269 -    return left_speed, right_speed, None, None, None, [leds]  
+      269 +    return left_speed, right_speed, None, None, None, [robot_l
+          +eds]                                                          
+      270  
+      271  
+      272  # --- communication loop (do not edit below this line) ---
+  ⎿  (timeout 8m 20s)
+
+● LEDs and activation are now fully separate in both controllers, and the
+  coordinator chooses the behaviour only from the activation flag (3rd column),
+  as in the C++ code.
+
+  What changed:
+  - Behaviours return nothing. They write speeds and the active flag into
+    activation_table, and the coordinator picks the highest-priority behaviour
+    whose flag is 1.0.
+  - LEDs are set directly with the new set_all_leds(color), the Python version
+    of m_pcEpuck->SetAllColoredLeds(). A behaviour turns its LED on when its
+    condition holds, even if it doesn't activate. For example, Go load sets RED
+    whenever the battery is low, even while already facing the light, which is
+    the C++ behaviour. step() starts each step with set_all_leds(LED_BLACK), and
+    if more than one behaviour sets a colour in the same step, the one that
+    runs last wins.
+  - step() now just runs the behaviours one by one, as the C++ code does:
+  set_all_leds(LED_BLACK)
+  obstacle_avoidance(AVOID_PRIORITY, activation_table, time, prox)
+  go_load(RELOAD_PRIORITY, activation_table, time, battery, light)
+  navigate(NAVIGATE_PRIORITY, activation_table, time)
+    Experiment 23 also calls forage() before navigate().
+  - Renamed the LED variable to robot_leds. The communication loop at the bottom
+    has its own leds variable, which would have overwritten it.
+
+  I reran 22 and 23 for the full 10,000 s with the same seed. The output files
+  and the coordinator trace are identical to the previous run, so speeds, chosen
+  behaviours and trajectories didn't change. The output files don't record LED
+  colours, so I didn't check those against a run. Nothing is committed yet.
+
+✻ Churned for 1m 4s · done 11:32 AM
+
+※ recap: Experiments 22 and 23 now run Python controllers with the same param files and match the original C++ results, and LEDs are now separate from behaviour activation. Next, review the changes and tell me whether to commit them. (disable recaps in /config)
+
+❯ commit the subsumption changes                                                
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● I committed the subsumption work as c6e8155 on main. It includes the two
+  Python controllers, the new C++ bridge, the experiment 22/23 changes, the
+  shared arena reader (also used by IRI1) and the README update. It isn't
+  pushed.
+
+  I left these out because they aren't part of this work:
+  - your changes to python/switchlight_controller.py and
+    python/wheels_controller.py
+  - the files in outputFiles/, which come from simulator runs
+
+✻ Brewed for 10s · done 12:48 PM
+
+❯ push changes                                                                  
+  Pushed to main (ctrl+o to expand)
+
+● I pushed main to github.com:aguti/irsimPy.git. The subsumption commit
+  (c6e8155) is now on GitHub. Your changes to switchlight_controller.py and
+  wheels_controller.py, and the files in outputFiles/, are still uncommitted on
+  your machine.
+
+✻ Churned for 7s · done 12:48 PM
+
+❯ did you update the README with the new controllers?                           
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● The README has the new sections, but README didn't appear in the commit's file
+  list. Let me check whether it was actually committed.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Yes. The README changes went into the subsumption commit c6e8155, which is
+  pushed. The file list above didn't show it because your newer commit f296c82
+  ("cleaning position") is now the latest one.
+
+  What the README covers for the new controllers:
+  - Introduction: says experiments 22 and 23 now use Python controllers.
+  - Experiment table (Python part): rows for experiment 22
+    (python/subsumption_light_controller.py) and experiment 23
+    (python/subsumption_garbage_controller.py).
+  - Return values: 22 and 23 return the same values as IRI1 (speeds, light
+    switches, LEDs).
+  - New section "Subsumption (experiments 22 and 23)":
+    - the commands to run them with their param files
+    - the behaviours and their priority order, and how the activation table and
+      coordinator work
+    - the LED colours
+    - the extra RobotSim_orientation argument
+    - the arena map in the Python files
+    - the output files written when WRITE TO FILE = 1
+  - C++ part: 22 and 23 are no longer listed as C++-only experiments.
+
+  The README doesn't yet describe last change, where behaviours set the LEDs
+  themselves with set_all_leds() instead of returning them. Do you want me to
+  add a line about that?
+
+✻ Churned for 12s · done 12:50 PM
+
+❯ yes, add it and push                                                          
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Bash(python3 - <<'EOF'
+      p='README'; s=open(p).read()…)
+  ⎿     f296c82..3de366f  main -> main
+     3de366f Document how subsumption behaviors set LEDs in README
+  ⎿  Updated README (+9 -1)
+      204  
+      205  Each behavior writes [left_speed, right_speed, active] in acti
+           vation_table,
+      206  and the coordinator selects the active behavior with the highe
+           st priority.
+      207 -LEDs: GREEN avoiding, RED low battery, BLUE carrying a puck (F
+          -orage).                                                       
+      207 +Behaviors return nothing: activation_table is their only link 
+          +to the                                                        
+      208 +coordinator.                                                  
+      209  
+      210 +LEDs are independent of the activation: a behavior sets them d
+          +irectly with                                                  
+      211 +set_all_leds(color) (like SetAllColoredLeds in C++) when its c
+          +ondition holds,                                               
+      212 +even if it does not activate (e.g. GoLoad sets RED whenever th
+          +e battery is                                                  
+      213 +low). step() first sets them to LED_BLACK; if several behavior
+          +s set a color,                                                
+      214 +the last one executed wins. Colors: GREEN avoiding, RED low ba
+          +ttery, BLUE                                                   
+      215 +carrying a puck (Forage).                                     
+      216 +                                                              
+      217  step() receives the same sensors as IRI1 plus RobotSim_orienta
+           tion (radians).
+      218  
+      219  The arena map (ARENA_*) is at the top of each Python file, as 
+           in IRI1. The
+
+● I added the LED explanation to the README's Subsumption section, committed it
+  as 3de366f and pushed it to GitHub.
+
+  The new text explains that:
+  - behaviours return nothing and talk to the coordinator only through
+    activation_table;
+  - LEDs don't depend on activation: a behaviour sets them with
+    set_all_leds(color) (like SetAllColoredLeds in C++) whenever its condition
+    holds, even if it doesn't activate (for example, Go load sets RED whenever
+    the battery is low);
+  - step() starts by setting the LEDs to LED_BLACK, and if several behaviours
+    set a colour, the last one to run wins;
+  - the colours are GREEN when avoiding, RED when the battery is low and BLUE
+    when carrying a puck.
+
+✻ Brewed for 14s · done 12:50 PM
+
+※ recap: We're moving irsimPy's robot controllers to Python, and subsumption experiments 22 and 23 are now done, documented in the README and pushed. Next, decide whether to commit your uncommitted changes to the switchlight and wheels controllers.
+
+❯ I dont see the python braitenberg controller, exp 20. Did you implement it?   
+
+● No. Experiment 20 (Braitenberg Vehicle 2) has no Python controller yet. The
+  experiments with Python controllers are 1–11, 22, 23 and 30. Experiment 20
+  still runs the original C++ controller. Here is what porting it would involve:
+
+  Ran 3 shell commands (ctrl+o to expand)
+
+● No, I haven't. Experiment 20 still uses the C++ controller
+  (controllers/braitenbergvehicle2controller.cpp). Neither earlier session
+  ported it: the Python controllers cover 1–11, 22, 23 and 30. It would be a
+  short port. Here's what the C++ controller does:
+
+  - It reads every sensor but only uses the 8 light sensors. It prints them each
+    step.
+  - The active code is "Test 9: V4 – Back & Forth", which mixes the front-left
+    and front-right light readings:
+  tmp[0] = light[0] + light[1];
+  tmp[1] = light[7] + light[6];
+  if (tmp[1] > 0.5) tmp[1] = 1 - tmp[1];
+  m_acWheels->SetOutput(0, 0.6 + tmp[1]);
+  m_acWheels->SetOutput(1, 0.6 + tmp[0]);
+    Tests 1–8 (Vehicle 2 lateral and contra-lateral variants, for positive and
+    negative light) are left in the code as comments.
+  - The wheels are set with SetOutput, not SetSpeed. It takes a value from 0 to
+    1: 0.5 means stopped, 1 means full forward and 0 means full reverse. All the
+    other Python controllers return speeds from −1000 to 1000.
+  - It always writes outputFiles/robotPosition, whatever the WRITE TO FILE flag
+    says.
+  - Its param file is paramFiles/braitenbergExamples/braitenbergParam.txt.
+
+  Here's how I'd port it, following the same pattern as 22 and 23:
+  1. Add a python/braitenberg_controller.py whose step() returns wheel outputs
+     from 0 to 1, as in the C++ version. That way the Braitenberg formulas look
+     the same in both. I'd include tests 1–8 as commented-out options, as in the
+     C++ file, with Test 9 active.
+  2. Add a small C++ bridge that applies those values with SetOutput.
+  3. Make experiment 20 use the Python controller, with the same param file and
+     the arena map in the Python file, like 22 and 23.
+  4. Run the Python and C++ versions with the same seed and compare them, then
+     update the README.
+
+  Should I go ahead? And would you rather have step() return outputs from 0 to
+  1, as above, or speeds from −1000 to 1000 like the other controllers?
+
+✻ Churned for 23s · done 12:59 PM
+
+❯ Go ahead                                                                      
+
+● I'll use the 0–1 outputs I recommended. First I'll read the full C++
+  controller, including the commented tests, and the experiment.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Experiment 20 creates no encoder or compass sensors, so the IRI1 bridge can't
+  be reused; I'm writing a small dedicated bridge and checking how SetOutput
+  uses its index.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Now the bridge (CPythonBraitenbergController):
+
+● Write(controllers/pythonbraitenbergcontroller.h)
+  ⎿  Wrote 54 lines to controllers/pythonbraitenbergcontroller.h
+       1 #ifndef PYTHONBRAITENBERGCONTROLLER_H_
+       2 #define PYTHONBRAITENBERGCONTROLLER_H_
+       3 
+       4 /***************************************************************
+         ***************/
+       5 /***************************************************************
+         ***************/
+       6 
+       7 #include "pythoncontrollerbase.h"
+       8 #include "epuckproximitysensor.h"
+     … +46 lines (ctrl+o to expand)
+
+● Write(controllers/pythonbraitenbergcontroller.cpp)
+  ⎿  Wrote 87 lines to controllers/pythonbraitenbergcontroller.cpp
+       1 
+       2 /******************* INCLUDES ******************/
+       3 /***********************************************/
+       4 
+       5 #include <cstdio>
+       6 #include "pythonbraitenbergcontroller.h"
+       7 
+       8 using namespace std;
+       9 
+      10 /***************************************************************
+     … +78 lines (~4 KB) (ctrl+o to expand)
+
+  Searched for 2 patterns (ctrl+o to expand)
+
+● GetSensorReading() isn't virtual, so the loop over CSensor* won't work. I'll
+  call each sensor explicitly, as the IRI1 bridge does.
+
+● Bash(python3 - <<'EOF'
+      p='controllers/pythonbraitenbergcontroller.cpp'; s=open(p).read()…)
+  ⎿  19:
+     pythonbraitenbergcontroller.cpp \
+  ⎿  Updated controllers/pythonbraitenbergcontroller.cpp (+20 -17)
+      12  
+      13  CPythonBraitenbergController::CPythonBraitenbergController(cons
+          t char* pch_name,
+      14                                                              CEp
+          uck*     pc_epuck,
+      15 -                                                            con
+         -st char* pch_script,                                           
+      16 -                                                            int
+         -         n_write_to_file)                                      
+      17 -    : CPythonControllerBase(pch_name, pc_epuck, pch_script),   
+      18 -      m_nWriteToFile(n_write_to_file)                          
+      15 +                                                            con
+         +st char* pch_script)                                           
+      16 +    : CPythonControllerBase(pch_name, pc_epuck, pch_script)    
+      17  {
+      18      m_seProx         = (CEpuckProximitySensor*) m_pcEpuck->GetS
+          ensor(SENSOR_PROXIMITY);
+      19      m_seLight        = (CRealLightSensor*)      m_pcEpuck->GetS
+          ensor(SENSOR_REAL_LIGHT);
+     ...
+      45   *   redbattery[0]      (1 value)
+      46   *   pos_x pos_y        (robot position)
+      47   *   orientation        (robot rotation in radians)
+      50 - *   write_to_file      (0 or 1, from the param file)          
+      48   */
+      49 +static void appendValues(char* buf, int& len, const double* val
+         +ues, int n)                                                    
+      50 +{                                                              
+      51 +    for (int i = 0; i < n; i++)                                
+      52 +        len += snprintf(buf + len, 4096 - len, " %.17g", values
+         +[i]);                                                          
+      53 +}                                                              
+      54 +                                                               
+      55  void CPythonBraitenbergController::appendSensorData(char* buf, 
+          int& len)
+      56  {
+      54 -    CSensor* sensors[] = { m_seProx, m_seLight, m_seBlueLight, 
+         -m_seRedLight,                                                  
+      55 -                           m_seContact, m_seGround, m_seGroundM
+         -emory,                                                         
+      56 -                           m_seBattery, m_seBlueBattery, m_seRe
+         -dBattery };                                                    
+      57 +    appendValues(buf, len, m_seProx->GetSensorReading(m_pcEpuck
+         +),         m_seProx->GetNumberOfInputs());                     
+      58 +    appendValues(buf, len, m_seLight->GetSensorReading(m_pcEpuc
+         +k),        m_seLight->GetNumberOfInputs());                    
+      59 +    appendValues(buf, len, m_seBlueLight->GetSensorReading(m_pc
+         +Epuck),    m_seBlueLight->GetNumberOfInputs());                
+      60 +    appendValues(buf, len, m_seRedLight->GetSensorReading(m_pcE
+         +puck),     m_seRedLight->GetNumberOfInputs());                 
+      61 +    appendValues(buf, len, m_seContact->GetSensorReading(m_pcEp
+         +uck),      m_seContact->GetNumberOfInputs());                  
+      62 +    appendValues(buf, len, m_seGround->GetSensorReading(m_pcEpu
+         +ck),       m_seGround->GetNumberOfInputs());                   
+      63 +    appendValues(buf, len, m_seGroundMemory->GetSensorReading(m
+         +_pcEpuck), m_seGroundMemory->GetNumberOfInputs());             
+      64 +    appendValues(buf, len, m_seBattery->GetSensorReading(m_pcEp
+         +uck),      m_seBattery->GetNumberOfInputs());                  
+      65 +    appendValues(buf, len, m_seBlueBattery->GetSensorReading(m_
+         +pcEpuck),  m_seBlueBattery->GetNumberOfInputs());              
+      66 +    appendValues(buf, len, m_seRedBattery->GetSensorReading(m_p
+         +cEpuck),   m_seRedBattery->GetNumberOfInputs());               
+      67  
+      58 -    for (unsigned s = 0; s < sizeof(sensors) / sizeof(sensors[0
+         -]); s++) {                                                     
+     … 15 more lines (ctrl+o to expand)
+  ⎿  Updated controllers/pythonbraitenbergcontroller.h (+1 -3)
+      27  {
+      28  public:
+      29      CPythonBraitenbergController(const char* pch_name, CEpuck* 
+          pc_epuck,
+      30 -                                 const char* pch_script, int n_
+         -write_to_file);                                                
+      30 +                                 const char* pch_script);      
+      31  
+      32  protected:
+      33      void appendSensorData(char* buf, int& len);
+     ...
+      44      CBatterySensor*        m_seBattery;
+      45      CBlueBatterySensor*    m_seBlueBattery;
+      46      CRedBatterySensor*     m_seRedBattery;
+      47 -                                                               
+      48 -    int m_nWriteToFile;                                        
+      47  };
+      48  
+      49  /**************************************************************
+          ****************/
+  ⎿  Updated controllers/Makefile.am (+1 -0)
+      16                                                                 
+           pythoncompasscontroller.cpp \
+      17                                                                 
+           pythoniri1controller.cpp \
+      18                                                                 
+           pythonsubsumptioncontroller.cpp \
+      19 +                                                               
+         + pythonbraitenbergcontroller.cpp \                             
+      20                                                                 
+           testwheelscontroller.cpp \
+      21                                                                 
+                                                           testlightcontr
+          oller.cpp \
+      22                                                                 
+                                                           testswitchligh
+          tcontroller.cpp \
+
+● I dropped the WRITE TO FILE flag from the message. The C++ controller ignores
+  it and always writes outputFiles/robotPosition, so the Python version does the
+  same. Now experiment 20:
+
+● Bash(python3 - <<'EOF'
+      script="python/braitenberg_controller.py"…)
+  ⎿   experiments/braitenbergvehicle2experiment.cpp | 41 +++++++++---------
+     ---------
+      experiments/braitenbergvehicle2experiment.h   |  7 +++++
+      2 files changed, 20 insertions(+), 28 deletions(-)
+  ⎿  Updated experiments/braitenbergvehicle2experiment.h (+7 -0)
+      25  private:
+      26  
+      27                  /* VARIABLES*/
+      28 +                /* Arena layout (read from Python) */          
+      29 +                int    m_nArenaCellsX;                         
+      30 +                int    m_nArenaCellsY;                         
+      31 +                double m_fArenaWidth;                          
+      32 +                double m_fArenaHeight;                         
+      33 +                char*  m_pchHeightMap;                         
+      34 +                                                               
+      35                  /* Extra */
+      36                  int m_nRobotsNumber;
+      37                  int m_nWriteToFile;
+  ⎿  Updated experiments/braitenbergvehicle2experiment.cpp (+13 -28)
+      32  #include "wheelsactuator.h"
+      33  
+      34  /******************** Controllers **************/
+      35 -#include "braitenbergvehicle2controller.h"                     
+      35 +#include "pythonbraitenbergcontroller.h"                       
+      36  
+      37  using namespace std;
+      38  
+      39 -/*Create Arena */                                              
+      40 -static const char* pchHeightMap =                              
+      41 -"%%%%%%%%%%%%%%%%%%%%"                                         
+      42 -"%##################%"                                         
+      43 -"%##################%"                                         
+      44 -"%##################%"                                         
+      45 -"%##################%"                                         
+      46 -"%##################%"                                         
+      47 -"%##################%"                                         
+      48 -"%##################%"                                         
+      49 -"%##################%"                                         
+      50 -"%##################%"                                         
+      51 -"%##################%"                                         
+      52 -"%##################%"                                         
+      53 -"%##################%"                                         
+      54 -"%##################%"                                         
+      55 -"%##################%"                                         
+      56 -"%##################%"                                         
+      57 -"%##################%"                                         
+      58 -"%##################%"                                         
+      59 -"%##################%"                                         
+      60 -"%%%%%%%%%%%%%%%%%%%%";                                        
+      61 -                                                               
+      62 -                                                               
+      39  extern gsl_rng* rng;
+      40  extern long int rngSeed;
+      41  
+     ...
+      48  
+      49          m_fLightSensorRange = 1.0; //1 meter
+      50          m_fBlueLightSensorRange = 1.0; //1 meter
+      51 +                                                               
+      52 +        /* Arena layout always comes from the Python file */   
+     … 46 more lines (ctrl+o to expand)
+
+● Now the Python controller. It ports Test 9 as the active one and keeps tests
+  1–8 commented out, as in the C++ file:
+
+● Write(python/braitenberg_controller.py)  ⎿  Wrote 183 lines to python/braitenberg_controller.py
+       1 import sys
+       2 
+       3 # ============================================================
+       4 # ARENA CONFIGURATION (edit to change the environment)
+       5 # Lights, ground areas, robots and sensors come from the param f
+         ile
+       6 # (e.g. paramFiles/braitenbergExamples/braitenbergParam.txt)
+       7 # ============================================================
+       8 ARENA_CELLS_X = 20      # grid columns (arena width discretisati
+         on)
+     … +175 lines (ctrl+o to expand)
+
+● Bash(python3 - <<'EOF'
+      p='python/braitenberg_controller.py'; s=open(p).read()…)
+  ⎿  new build exit=0
+     orig build exit=0
+  ⎿  Updated python/braitenberg_controller.py (+3 -3)
+      78          Values outside [0, 1] are saturated by the simulator.
+      79      """
+      80  
+      81 -    # FASE 1: SENSORES                                         
+      81 +    # Phase 1: sensors                                         
+      82      print("LIGHT: " + "".join(f"{v:1.3f} " for v in light), fil
+          e=sys.stderr)
+      83  
+      84 -    # FASE 2: CONTROLADOR                                      
+      84 +    # Write robot position (always, as in the C++ controller)  
+      85      with open("outputFiles/robotPosition", "a") as f:
+      86          f.write(f" {time:2.4f} {RobotSim_pos_x:2.4f} {RobotSim_
+          pos_y:2.4f} {RobotSim_orientation:2.4f}\n")
+      87  
+      88 -    # FASE 3: ACTUACION (uncomment one test)                   
+      88 +    # Phase 3: actuation (uncomment one test, comment the other
+         +s)                                                             
+      89  
+      90      # TEST 1-8: Light (-0.7, 0.7), Robot (0.0, 0.0, 1.57)
+      91      # Test 1: V2 - Contra Lateral + Light
+  ⎿  (timeout 10m)
+
+● Both builds succeeded. Now I'll run both versions with the same seed and
+  compare the position log and the LIGHT trace.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Identical: all 100,000 lines of robotPosition and the whole LIGHT trace match
+  the C++ version exactly. A quick check without a param file and through
+  simulator.py:
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● The safety check blocked the rm -rf on a variable path. I'll use fresh test
+  folders with literal paths, which need no deletion.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● All three run cleanly. Now I'll remove the comparison worktree and update the
+  README.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Bash(python3 - <<'EOF'
+      p='README'; s=open(p).read()…)
+  ⎿   M README
+      M controllers/Makefile.am
+      M experiments/braitenbergvehicle2experiment.cpp
+     … +5 lines (ctrl+o to expand)
+  ⎿  Updated README (+35 -3)
+       2  =======
+       3  
+       4  irsimPy is the IRSIM e-puck robot simulator (C++) with a Python
+           bridge: the
+       5 -robot controllers of the test experiments (1-11), the subsumpti
+         -on experiments                                                 
+       6 -(22, 23) and IRI1 (30) are written in Python, so you can progra
+         -m the robot without touching or recompiling C++.               
+       5 +robot controllers of the test experiments (1-11), Braitenberg (
+         +20), the                                                       
+       6 +subsumption experiments (22, 23) and IRI1 (30) are written in P
+         +ython, so you                                                  
+       7 +can program the robot without touching or recompiling C++.     
+       8  
+       9  This README has two parts:
+      10  
+     ...
+      73     9  Test Battery Sensor    python/battery_controller.py      
+          battery (1)
+      74    10  Test Encoder Sensor    python/encoder_controller.py      
+          encoder (2), RobotSim_pos_x/y
+      75    11  Test Compass Sensor    python/compass_controller.py      
+          encoder (2), compass (1)
+      76 +  20  Braitenberg Vehicle 2  python/braitenberg_controller.py  
+         +all sensors except encoder/compass                             
+      77    22  Subsumption Light      python/subsumption_light_controlle
+          r.py    all sensors (see below)
+      78    23  Subsumption Garbage    python/subsumption_garbage_control
+          ler.py  all sensors (see below)
+      79    30  IRI1                   python/iri1_controller.py         
+          all sensors (see below)
+     ...
+      103        speeds in [-1000, 1000]
+      104    * Experiment 7 (switch light):  return left_speed, right_spe
+           ed, switch_cmd
+      105        switch_cmd: 1 = switch nearest light ON, 0 = OFF, None =
+            no action
+      106 +  * Experiment 20 (Braitenberg):  return left_output, right_ou
+          +tput                                                          
+      107 +      outputs in [0, 1]: 0.5 = stop, 1 = full forward, 0 = ful
+          +l backward                                                    
+      108    * Experiments 22, 23 (subsumption) and 30 (IRI1):
+      109        return left_speed, right_speed, switch_light, switch_blu
+           e, switch_red, leds
+      110        switch_*: 1 = ON, 0 = OFF, None = no action (nearest lig
+           ht of that color)
+     ...
+      189  no lights and no ground areas.
+      190  
+      191  
+      192 +Braitenberg (experiment 20)                                   
+      193 +---------------------------                                   
+      194 +                                                              
+      195 +Python version of the C++ Braitenberg Vehicle 2 controller. It
+          + uses the same                                                
+      196 +param file as the C++ version:                                
+      197 +                                                              
+      198 +  python3 python/simulator.py -E 20 -p paramFiles/braitenbergE
+          +xamples/braitenbergParam.txt                                  
+      199 +                                                              
+      200 +  (or ./irsim with the same arguments)                        
+      201 +                                                              
+      202 +step() receives proximity, light (white, blue, red), contact, 
+          +ground, ground                                                
+     … 28 more lines (ctrl+o to expand)
+
+● Experiment 20 now runs a Python controller, and on the same seed it behaves
+  exactly like the C++ one. The command is unchanged:
+
+  ./irsim -E 20 -p paramFiles/braitenbergExamples/braitenbergParam.txt
+
+  python3 python/simulator.py with the same arguments also works.
+
+  Testing: I built the original C++ version from git and ran both with the same
+  seed for the full run. All 100,000 lines of outputFiles/robotPosition and the
+  whole LIGHT sensor trace are identical, not just close. Experiment 20 also
+  runs without a param file and through simulator.py, and experiment 22 still
+  works.
+
+  What I added:
+  - python/braitenberg_controller.py
+    - Test 9 (Vehicle 4, back & forth) is active, as in C++. Tests 1–8 are there
+      commented out; uncomment the one you want.
+    - Outputs: step() returns wheel outputs from 0 to 1 (0.5 = stop), so the
+      formulas look the same as in C++.
+    - Other C++ behaviour kept: it prints the light sensors every step, always
+      writes outputFiles/robotPosition whatever the WRITE TO FILE flag says, and
+      has the arena map at the top of the file.
+  - C++ bridge controllers/pythonbraitenbergcontroller.*: experiment 20 has no
+    encoder or compass sensors, so the IRI1 bridge couldn't be reused. This
+    bridge sends only this experiment's sensors plus the robot pose, and applies
+    the reply with SetOutput.
+  - Experiment 20 reads the param file as before. The C++ controller is still in
+    controllers/ but no longer used.
+  - README: experiment 20 is in the Python table, its return values are
+    explained, it has a new "Braitenberg (experiment 20)" section, and it's no
+    longer listed under C++ experiments.
+
+  Nothing is committed yet. Should I commit and push it? outputFiles/ shows as
+  untracked after your "cleaning position" commit, and I'd leave it out.
+
+✻ Baked for 3m 30s · done 1:05 PM
+
+※ recap: I'm porting the irsim experiments to Python controllers, and Braitenberg experiment 20 is done and matches the C++ version exactly. Next, I'll commit and push it once you confirm, leaving out the `outputFiles/` folder.
+
+❯ You broke the original experiment ./irsim -E 20 is breaking                   
+
+● I'll reproduce it from the repo root, the way you ran it.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● It reproduces: a segmentation fault. The cause is in
+  python/braitenberg_controller.py, which was edited after my tests (it has an
+  IndentationError at line 92). Let me look:
+
+  Read 1 file (ctrl+o to expand)
+
+● Lines 92–93 of python/braitenberg_controller.py have one extra space before
+  the indent, which raises an IndentationError and crashes the run. I'm also
+  making the C++ arena reader stop with a clear message on Python errors instead
+  of segfaulting or printing endless read error lines.
+
+  Searched for 1 pattern (ctrl+o to expand)
+
+● Bash(python3 - <<'EOF'
+      p='controllers/pythoncontrollerbase.cpp'; s=open(p).read()…)
+  ⎿      appendSensorData(buf, len);
+
+         buf[len++] = '\n';
+     … +15 lines (ctrl+o to expand)
+  ⎿  Updated controllers/pythoncontrollerbase.cpp (+15 -3)
+      20                                                CEpuck*     pc_ep
+          uck,
+      21                                                const char* pch_s
+          cript)
+      22      : CController(pch_name, pc_epuck),
+      23 -      m_pid(-1), m_fdWrite(-1), m_pfRead(NULL)                 
+      23 +      m_pchScript(pch_script), m_pid(-1), m_fdWrite(-1), m_pfRe
+         +ad(NULL)                                                       
+      24  {
+      25      m_pcEpuck  = pc_epuck;
+      26      m_acWheels = (CWheelsActuator*) m_pcEpuck->GetActuator(ACTU
+          ATOR_WHEELS);
+     ...
+      84      write(m_fdWrite, buf, len);
+      85  
+      86      if (!fgets(m_lineBuf, sizeof(m_lineBuf), m_pfRead)) {
+      87 -        fprintf(stderr, "[PythonController] read error\n");    
+      87 +        /* The Python process has died: its error is already on
+         + the terminal */                                               
+      88 +        fprintf(stderr, "[PythonController] %s stopped. Fix the
+         + Python error shown above.\n",                                 
+      89 +                m_pchScript);                                  
+      90 +        exit(1);                                               
+      91          return;
+      92      }
+      93      handleResponse(m_lineBuf);
+     ...
+      159  
+      160      char line[512];
+      161  
+      162 +    /* No output means the script failed: its error is already
+          + on the terminal */                                           
+      163 +    if (!fgets(line, sizeof(line), f)) {                      
+      164 +        pclose(f);                                            
+      165 +        unlink(tmpPath);                                      
+      166 +        fprintf(stderr, "[PythonController] Cannot read the ar
+          +ena from %s. "                                                
+      167 +                        "Fix the Python error shown above.\n",
+          + pch_script);                                                 
+      168 +        exit(1);                                              
+      169 +    }                                                         
+      170 +                                                              
+      171      /* Arena dimensions */
+      160 -    fgets(line, sizeof(line), f); n_cells_x = atoi(line);     
+      172 +    n_cells_x = atoi(line);                                   
+      173      fgets(line, sizeof(line), f); n_cells_y = atoi(line);
+      174      fgets(line, sizeof(line), f); f_width = atof(line);
+      175      fgets(line, sizeof(line), f); f_height = atof(line);
+  ⎿  Updated controllers/pythoncontrollerbase.h (+1 -0)
+      45      CEpuck*          m_pcEpuck;
+      46  
+      47  private:
+      48 +    const char* m_pchScript;                                   
+      49      pid_t m_pid;
+      50      int   m_fdWrite;
+      51      FILE* m_pfRead;
+
+● The build passed, and I'm removing a leftover return and ignoring SIGPIPE so a
+  dead Python process can't silently kill the simulator before the error
+  prints.
+
+● Bash(python3 - <<'EOF'
+      p='controllers/pythoncontrollerbase.cpp'; s=open(p).read()…)
+  ⎿  make_exit=0
+     irsim_exit=124
+     LIGHT: 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+     … +535 lines (ctrl+o to expand)
+  ⎿  Updated controllers/pythoncontrollerbase.cpp (+4 -1)
+      25      m_pcEpuck  = pc_epuck;
+      26      m_acWheels = (CWheelsActuator*) m_pcEpuck->GetActuator(ACTU
+          ATOR_WHEELS);
+      27  
+      28 +    /* If Python dies, writing to its pipe must fail instead of
+         + killing the                                                   
+      29 +       simulator, so SimulationStep can report the error */    
+      30 +    signal(SIGPIPE, SIG_IGN);                                  
+      31 +                                                               
+      32      int pipe_to[2], pipe_from[2];
+      33      if (pipe(pipe_to) < 0 || pipe(pipe_from) < 0) {
+      34          perror("pipe");
+     ...
+      92          fprintf(stderr, "[PythonController] %s stopped. Fix the
+           Python error shown above.\n",
+      93                  m_pchScript);
+      94          exit(1);
+      91 -        return;                                                
+      95      }
+      96      handleResponse(m_lineBuf);
+      97  }
+  ⎿  … 1 more file changed (part of the diff is unavailable)
+  ⎿  (timeout 5m)
+
+● This time it ran: it printed LIGHT lines and was stopped by my 10-second
+  timeout. So the Python file must have changed since my first run. Let me check
+  it.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● You already fixed the indentation on lines 92–93 and commented out Test 9, so
+  the original crash came only from that. I'm running a broken copy in a scratch
+  folder to test the error handling without touching your file.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Both cases now stop with a clear message. Last check: normal runs still work
+  (experiments 1, 22 and 30 use the same base code).
+
+  Ran 1 shell command (ctrl+o to expand)
+
+❯ Ok understood the indentation problem, but I cannot unerstand why C execution 
+  with ./irsim is crashing becayse a python file breaks. Can you explain?       
+
+● The short answer: ./irsim -E 20 no longer runs C++-only code. The irsim
+  program is still C++ (the simulator: physics, sensors, graphics), but since
+  this change experiment 20 depends on the Python file in two places:
+
+  1. At startup it reads the arena from Python. The experiment's constructor
+     calls ReadArenaConfig("python/braitenberg_controller.py", ...). That runs
+     python3 on the file to get ARENA_CELLS_X/Y, ARENA_WIDTH/HEIGHT and
+     ARENA_MAP, because the map now lives in the Python file instead of the
+     .cpp.
+  2. Every step it asks Python for the wheel outputs. The controller is now
+     CPythonBraitenbergController. It starts python3 
+     python/braitenberg_controller.py as a child process, sends the sensors
+     through a pipe, and reads the reply. The old CBraitenbergVehicle2Controller
+     is no longer used.
+
+  So a Python error does affect ./irsim. The crash itself was my bug, in step 1.
+  With the IndentationError, the arena reader printed nothing, and my C++ code
+  didn't check for that. It read empty or uninitialised values, built an arena
+  of 0×0 cells with an invalid map, and the simulator crashed with a
+  segmentation fault instead of reporting the problem. IRI1 (30), 22 and 23 had
+  the same weakness.
+
+  What I fixed (in controllers/pythoncontrollerbase.cpp):
+  - Error while reading the arena: the simulator now stops with the Python error
+    and [PythonController] Cannot read the arena from 
+    python/braitenberg_controller.py. Fix the Python error shown above.
+  - Error during a run (for example an IndexError in step()): it now stops with
+    [PythonController] python/braitenberg_controller.py stopped. Fix the Python 
+    error shown above. Before, it printed read error every step, or the
+    simulator could be killed silently because it was writing to a pipe of a
+    process that had died.
+
+  I checked both cases with broken copies of your file in a scratch folder (exit
+  code 1 with those messages). Experiments 1, 22 and 30 still run normally. The
+  124 exit codes above just mean my 15-second time limit stopped them while
+  they were running. Your current braitenberg_controller.py, with Test 1 active
+  and Test 9 commented out, runs fine.
+
+  Your files:
+  - outputFiles/robotPosition: while reproducing the problem I ran ./irsim -E 20
+    from the repo root for 10 seconds, so it appended about 3 MB of lines to
+    your file. They start with  0.0000 0.0000 0.0000 0.0000 because that run had
+    no param file. I didn't trim them, because I can't tell them apart from
+    lines your own runs may have added. Clear the file before your next test if
+    you need it clean.
+  - python/braitenberg_controller.py: I didn't touch your copy.
+
+  None of the experiment 20 work or this fix is committed yet. Should I commit
+  and push it, still leaving outputFiles/ out?
+
+✻ Churned for 2m 24s · done 1:35 PM
+
+※ recap: We're porting the irsim experiments to Python, and Braitenberg (experiment 20) now works and matches the C++ version, with clear messages when the Python file has an error. Next: your go-ahead to commit and push it.
+
+❯ commit and push and update README if needed                                   
+
+  Ran 1 shell command (ctrl+o to expand)
+● The Python controller has Test 1 active while the C++ version and README
+  default to Test 9, so I'm committing it with Test 9 active and leaving your
+  working copy alone. Updating the README next.
+
+● Bash(python3 - <<'EOF'
+      p='README'; s=open(p).read()…)
+  ⎿  92,93c92,93
+     <     left_output  = 0.5 + light[7]
+     <     right_output = 0.5 + light[0]
+     … +22 lines (ctrl+o to expand)
+  ⎿  Updated README (+9 -1)
+      265      communication loop.
+      266    * "Simulator binary not found": compile first (see PART 2, "
+           Installation").
+      267    * Controller not found: run the simulator from the irsimPy r
+           oot folder.
+      268 -  * Python errors in your controller are shown in the terminal
+          - (stderr).                                                    
+      268 +  * Python errors in your controller are shown in the terminal
+          + (stderr),                                                    
+      269 +    and the simulator stops with one of these messages:       
+      270 +      [PythonController] Cannot read the arena from python/<fi
+          +le>.py ...                                                    
+      271 +          the file has an error before step() runs (syntax, in
+          +dentation,                                                    
+      272 +          ARENA_* values). The arena is read from the controll
+          +er file when                                                  
+      273 +          the simulator starts, so ./irsim also fails if the f
+          +ile is broken.                                                
+      274 +      [PythonController] python/<file>.py stopped ...         
+      275 +          the controller crashed during the run (e.g. an excep
+          +tion in step()).                                              
+      276 +    Fix the Python error printed just above the message and ru
+          +n again.                                                      
+      277  
+      278  
+      279  ##############################################################
+           ##################
+
+● The only differences are the Test 1 / Test 9 toggles. Now I'll stage the Test
+  9 version (without changing your working file), add the rest, commit and push:
+
+  Pushed to main (ctrl+o to expand)
+  ⎿  PostToolUse:Bash says: Tip: Run /ultrareview before you push to catch bugs 
+     with a cloud-based multi-agent review — 3 free reviews left.
+
+● I committed the experiment 20 work as a4adc8b and pushed it to GitHub.
+
+  What's in the commit:
+  - Experiment 20 Python controller: python/braitenberg_controller.py, the
+    CPythonBraitenbergController bridge, and experiment 20 switched to the
+    Python controller.
+  - Error-handling fix in the Python bridge: a broken controller file now stops
+    the simulator with a clear message instead of a segmentation fault. This
+    applies to experiments 1–11, 20, 22, 23 and 30.
+  - README:
+    - experiment 20 is in the Python part and has its own section
+    - Troubleshooting now explains the two [PythonController] messages
+    - it notes that ./irsim also fails when the controller file is broken,
+      because the arena is read from that file at startup
+
+  Your Test 1 edit: the committed braitenberg_controller.py has Test 9 active,
+  as in the C++ controller and the README. Your working copy still has Test 1
+  active and Test 9 commented out, so it shows as modified locally. That's the
+  only difference: those few lines are toggled. If you want Test 1 as the
+  default in the repo instead, just commit your version.
+
+  outputFiles/ is still untracked and not committed. It includes the lines my
+  10-second test run appended to robotPosition.
+
+✻ Cogitated for 37s · done 1:41 PM
+
+※ recap: We're porting irsim experiments to Python controllers; Braitenberg experiment 20 is done and pushed (a4adc8b), matching the C++ version exactly. Next, decide whether to commit your local Test 1 edit as the default.
+
+❯ Question. If I execute the original code with ./irsim -E 1, and modify and    
+  compile the controllers/testwheelscontroller.cpp, it does not change          
+  anything. It seems onyl the python/wheels_controller.py is the one that       
+  affect. Is that correct?                                                      
+
+  Searched for 1 pattern (ctrl+o to expand)
+
+● Yes, that's correct. Experiment 1 no longer uses testwheelscontroller.cpp. In
+  experiments/testwheelsexp.cpp:121 it creates the Python bridge:
+
+  CController* pcController = new CPythonWheelsController(pchTemp, pc_epuck,
+  "python/wheels_controller.py");
+
+  CTestWheelsController isn't referenced by any experiment any more. Its file is
+  still in controllers/Makefile.am, so it compiles with make, but it never
+  runs. Editing it has no effect, and python/wheels_controller.py is what drives
+  the robot.
+
+  The same applies to every experiment that was moved to Python:
+
+  ┌─────┬────────────────────────────────────┬──────────────────────────────┐
+  │ Exp │   Controller that actually runs    │     Old C++ controller       │
+  │     │                                    │      (compiled, unused)      │
+  ├─────┼────────────────────────────────────┼──────────────────────────────┤
+  │ 1–1 │ python/<sensor>_controller.py      │ controllers/test*controller. │
+  │ 1   │                                    │ cpp                          │
+  ├─────┼────────────────────────────────────┼──────────────────────────────┤
+  │ 20  │ python/braitenberg_controller.py   │ braitenbergvehicle2controlle │
+  │     │                                    │ r.cpp                        │
+  ├─────┼────────────────────────────────────┼──────────────────────────────┤
+  │ 22  │ python/subsumption_light_controlle │ subsumptionlightcontroller.c │
+  │     │ r.py                               │ pp                           │
+  ├─────┼────────────────────────────────────┼──────────────────────────────┤
+  │ 23  │ python/subsumption_garbage_control │ subsumptiongarbagecontroller │
+  │     │ ler.py                             │ .cpp                         │
+  ├─────┼────────────────────────────────────┼──────────────────────────────┤
+  │ 30  │ python/iri1_controller.py          │ iri1controller.cpp           │
+  └─────┴────────────────────────────────────┴──────────────────────────────┘
+
+  Only experiments 21, 24, 31 and 32 still run their C++ controllers.
+
+  So ./irsim is the C++ simulator, but for those experiments the robot's
+  decisions come from the Python file. When you change a Python controller you
+  don't need to recompile, just run again. You only need make when you change
+  the C++ simulator or the bridge.
+
+  If you want to keep using the C++ controllers too (for example to compare with
+  Python, or for students who work in C++), I can add a way to choose between
+  them. For example, ./irsim -E 1 could run Python and a new flag could run the
+  original C++ controller, with the same experiment and param file. Do you want
+  that?
+
+✻ Baked for 11s · done 1:54 PM
+
+❯ Not really, I would like to find a way that doing ./irsim -E 1 executes the   
+  C++ code but python3 python/simulator.py -E 1 executes the python code. Do    
+  you think there is a way to do it?                                            
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Yes, there's a clean way to do it, and the change is small.
+
+  Idea: add a "Python mode" switch to irsim. Each Python-capable experiment
+  checks it when it creates its controller:
+
+  if (g_bPythonMode)
+      pcController = new CPythonWheelsController(pchTemp, pc_epuck,
+  "python/wheels_controller.py");
+  else
+      pcController = new CTestWheelsController(pchTemp, pc_epuck);   // original
+  C++
+
+  The switch would be a new command-line flag, -P (it's free; the existing ones
+  are -e -s -f -E -p -c -l -v -h). simulator.py would always add it:
+
+  ┌───────────────────────┬─────────────────────────────────────────────────┐
+  │        Command        │                      Runs                       │
+  ├───────────────────────┼─────────────────────────────────────────────────┤
+  │ ./irsim -E 1          │ original C++ controller                         │
+  │                       │ (controllers/testwheelscontroller.cpp)          │
+  ├───────────────────────┼─────────────────────────────────────────────────┤
+  │ python3               │ Python controller                               │
+  │ python/simulator.py   │ (python/wheels_controller.py), because it calls │
+  │ -E 1                  │  ./irsim -E 1 -P                                │
+  ├───────────────────────┼─────────────────────────────────────────────────┤
+  │ ./irsim -E 1 -P       │ Python controller, if you ever want it without  │
+  │                       │ the launcher                                    │
+  └───────────────────────┴─────────────────────────────────────────────────┘
+
+  Both use the same param files. I'd use a flag rather than an environment
+  variable: it's visible in ./irsim -h and you can always see from the command
+  which mode you're in.
+
+  C++ mode would be exactly as it was originally:
+  - Arena: the map comes from the C++ experiment again. I'd restore the original
+    maps in 20, 22, 23 and 30. In Python mode the map still comes from the
+    Python file.
+  - Initial position (1–11): comes from the C++ code, which originally starts at
+    (0, 0, 0). INIT_X/Y/THETA in the Python files would only apply in Python
+    mode.
+  - No Python at all: ./irsim wouldn't start Python, so a broken .py file can't
+    affect C++ runs. That also removes the confusion from earlier.
+
+  Applies to experiments 1–11, 20, 22, 23 and 30. The rest (21, 24, 31, 32) only
+  have C++ controllers and are unaffected. I'd also update the README, and test
+  each experiment in both modes, checking that C++ mode reproduces the original
+  runs exactly.
+
+  Should I go ahead?
+
+✻ Cogitated for 16s · done 1:56 PM
+
+❯ lets do the experiment with example 1 only first                              
+
+● I'll start with the parts of main.cpp that handle arguments and help, and
+  experiment 1's source.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Now the changes: the -P flag in main.cpp, and experiment 1 choosing its
+  controller and starting position based on it.
+
+● Bash(python3 - <<'EOF'
+      p='main.cpp'; s=open(p).read()…)
+  ⎿  make=0
+  ⎿  Updated main.cpp (+8 -0)
+      183  bool                                    g_bNNParameters       
+                                                     = false;
+      184  
+      185  bool                                    g_bVisual             
+                                                                     = tr
+           ue;
+      186 +bool                                    g_bPythonMode         
+          +                                          = false;        // -
+          +P: use the Python controllers                                 
+      187  /*************************************************************
+           *****************/
+      188  /*************************************************************
+           *****************/
+      189  
+     ...
+      258                                  g_bVisual = false;
+      259                                  printf("No visual\n");
+      260                                  break;
+      261 +                                                              
+      262 +                        /* Python mode: use the Python control
+          +lers in python/ */                                            
+      263 +                        case 'P':                             
+      264 +                                g_bPythonMode = true;         
+      265 +                                printf("Python mode\n");      
+      266 +                                break;                        
+      267                          /* Print Help */
+      268                          case 'h':
+      269                                  usage();
+     ...
+      1413          printf("-c chromosomefilename, introduce chromosome p
+            aramfile\n");
+      1414          printf("-l create random genome for the learing funct
+            ion\n");
+      1415          printf("-v work with the NULL render\n");
+      1416 +        printf("-P use the Python controllers (python/*.py) i
+           +nstead of the C++ ones\n");                                  
+      1417          printf("\n\n -h, prints this help\n");
+      1418          exit(0);
+      1419  }
+  ⎿  Updated experiments/testwheelsexp.cpp (+13 -3)
+      21  #include "wheelsactuator.h"
+      22  
+      23  /******************** Controllers **************/
+      24 +#include "testwheelscontroller.h"                              
+      25  #include "pythonwheelscontroller.h"
+      26  
+      27 +/* -P flag: use the Python controller instead of the C++ one */
+      28 +extern bool g_bPythonMode;                                     
+      29  
+      30  
+      31 +                                                               
+      32  using namespace std;
+      33  
+      34  /* Create Area */
+     ...
+      122          /* Create and add test wheelscontroller */
+      123          char pchTemp[128];
+      124          sprintf(pchTemp, "testwheels");
+      121 -        CController* pcController = new CPythonWheelsControlle
+          -r(pchTemp, pc_epuck, "python/wheels_controller.py");          
+      125 +        CController* pcController = NULL;                     
+      126 +        if (g_bPythonMode)                                    
+      127 +                pcController = new CPythonWheelsController(pch
+          +Temp, pc_epuck, "python/wheels_controller.py");               
+      128 +        else                                                  
+      129 +                pcController = new CTestWheelsController(pchTe
+          +mp, pc_epuck);                                                
+      130          pc_epuck->SetControllerType( CONTROLLER_TEST_WHEELS );
+      131          pc_epuck->SetController(pcController);
+      132  }
+     ...
+      136  
+      137  void CTestWheelsExp::CreateAndAddEpucks(CSimulator* pc_simulat
+           or)
+      138  {
+      131 -        double px, py, ptheta;                                
+      132 -        CPythonControllerBase::ReadInitPose("python/wheels_con
+          -troller.py", px, py, ptheta);                                 
+      139 +        /* Initial pose: from the Python file in Python mode, 
+          +(0, 0, 0) otherwise */                                        
+      140 +        double px = 0.0, py = 0.0, ptheta = 0.0;              
+      141 +        if (g_bPythonMode)                                    
+      142 +                CPythonControllerBase::ReadInitPose("python/wh
+          +eels_controller.py", px, py, ptheta);                         
+      143          char label[100];
+      144          for (int i = 0; i < m_nRobotsNumber; i++)
+      145          {
+  ⎿  Updated python/simulator.py (+2 -1)
+      73          self.produce_frames = produce_frames
+      74  
+      75      def _build_command(self):
+      76 -        cmd = [_BINARY, "-E", str(self.experiment)]            
+      76 +        # -P: irsim uses the Python controllers (./irsim alone 
+         +uses C++)                                                      
+      77 +        cmd = [_BINARY, "-E", str(self.experiment), "-P"]      
+      78          if self.seed is not None:
+      79              cmd += ["-s", str(self.seed)]
+      80          if not self.visual:
+
+● The build succeeded. Now I'll test the three ways to run experiment 1. To
+  prove that ./irsim -E 1 doesn't touch Python at all, the scratch folder gets a
+  deliberately broken wheels_controller.py.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Both controllers drive at 1000/1000 and print nothing, so I'll use modified
+  copies in scratch folders to tell them apart. One copy prints PYTHON every
+  step; the other is broken on purpose.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Experiment 1 now works the way you described:
+
+  Command: ./irsim -E 1
+  Runs: C++ controller controllers/testwheelscontroller.cpp
+  Test result: 0 Python lines; it even runs with a broken .py file
+  ────────────────────────────────────────
+  Command: python3 python/simulator.py -E 1
+  Runs: Python controller python/wheels_controller.py
+  Test result: prints Python mode, and the Python controller ran every step
+  ────────────────────────────────────────
+  Command: ./irsim -E 1 -P
+  Runs: Python controller (same as above, without the launcher)
+  Test result: same as above
+
+  The 124 exit codes just mean my 8-second limit stopped runs that were working.
+  With the broken .py, Python mode stops with the clear [PythonController] … 
+  stopped message, and C++ mode isn't affected at all.
+
+  What changed:
+  - main.cpp: a new -P flag sets g_bPythonMode. It's also listed in ./irsim -h.
+  - experiments/testwheelsexp.cpp:
+    - Without -P, it creates the original CTestWheelsController and starts at
+      (0, 0, 0), exactly as before the Python work.
+    - With -P, it creates the Python bridge and reads INIT_X/Y/THETA from
+      python/wheels_controller.py.
+  - python/simulator.py: always adds -P when it launches ./irsim.
+
+  Once you've rebuilt with make (I already did), editing
+  testwheelscontroller.cpp and recompiling changes what ./irsim -E 1 does.
+  Editing wheels_controller.py changes what simulator.py -E 1 does, with no
+  recompiling.
+
+  Side effect until the other experiments are done: simulator.py now always
+  passes -P, but only experiment 1 checks it. Running 2–11, 20, 22, 23 or 30
+  with either command still uses their Python controllers, as they did before
+  this change. And I haven't updated the README yet; I'll do that once the
+  approach is applied to all the experiments.
+
+  Nothing is committed. Try it, and if you're happy I'll apply the same pattern
+  to 2–11, 20, 22, 23 and 30.
+
+✻ Crunched for 1m 23s · done 1:58 PM
+
+❯ yes it looks great, go for all experiments                                    
+
+● I'll first see exactly what the Python port changed in each experiment
+  compared with the original clone (df9cf61), so that C++ mode restores the
+  exact original behaviour.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Experiments 2–11 match the same pattern, but each C++ starting position
+  differs (prox starts at (0, 1.2, 1.57)), so I'll restore them exactly. Next
+  I'm checking the diffs for 20, 22, 23 and 30.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● In C++ mode I'll restore the original map string and 20×20, 3 m arena from
+  git, while Python mode keeps reading its map from the .py file, and I'll keep
+  the uninitialised-value fixes since they only make C++ safer.
+
+● Bash(python3 - <<'EOF'
+      import subprocess…)
+  ⎿  ok
+     make=0
+  ⎿  Updated experiments/testcontactexp.cpp (+13 -3)
+      21  #include "wheelsactuator.h"
+      22  
+      23  /******************** Controllers **************/
+      24 +#include "testcontactcontroller.h"                             
+      25  #include "pythoncontactcontroller.h"
+      26  
+      27 +/* -P flag: use the Python controller instead of the C++ one */
+      28 +extern bool g_bPythonMode;                                     
+      29  
+      30 +                                                               
+      31  using namespace std;
+      32  
+      33  /*Create Arena */
+     ...
+      126          /* Create and add test light controller */
+      127          char pchTemp[128];
+      128          sprintf(pchTemp, "testcontact");
+      125 -        CController* pcController = new CPythonContactControll
+          -er(pchTemp, pc_epuck, "python/contact_controller.py");        
+      129 +        CController* pcController = NULL;                     
+      130 +        if (g_bPythonMode)                                    
+      131 +                pcController = new CPythonContactController(pc
+          +hTemp, pc_epuck, "python/contact_controller.py");             
+      132 +        else                                                  
+      133 +                pcController = new CTestContactController(pchT
+          +emp, pc_epuck);                                               
+      134          pc_epuck->SetControllerType( CONTROLLER_TEST_CONTACT )
+           ;
+      135          pc_epuck->SetController(pcController);
+      136  }
+     ...
+      140  
+      141  void CTestContactExp::CreateAndAddEpucks(CSimulator* pc_simula
+           tor)
+      142  {
+      135 -        double px, py, ptheta;                                
+      136 -        CPythonControllerBase::ReadInitPose("python/contact_co
+          -ntroller.py", px, py, ptheta);                                
+      143 +        /* Initial pose: from the Python file in Python mode, 
+          +the original one otherwise */                                 
+      144 +        double px = 0, py = 0, ptheta = 0.0;                  
+      145 +        if (g_bPythonMode)                                    
+      146 +                CPythonControllerBase::ReadInitPose("python/co
+          +ntact_controller.py", px, py, ptheta);                        
+      147          char label[100];
+      148          for (int i = 0; i < m_nRobotsNumber; i++)
+      149          {
+  ⎿  Updated experiments/testproxexp.cpp (+13 -3)
+      21  #include "wheelsactuator.h"
+      22  
+      23  /******************** Controllers **************/
+      24 +#include "testproxcontroller.h"                                
+      25  #include "pythonproxcontroller.h"
+      26  
+      27 +/* -P flag: use the Python controller instead of the C++ one */
+      28 +extern bool g_bPythonMode;                                     
+      29  
+      30 +                                                               
+      31  using namespace std;
+      32  
+      33  /*Create Arena */
+     ...
+      126          /* Create and add test light controller */
+      127          char pchTemp[128];
+      128          sprintf(pchTemp, "testprox");
+      125 -        CController* pcController = new CPythonProxController(
+          -pchTemp, pc_epuck, "python/prox_controller.py");              
+      129 +        CController* pcController = NULL;                     
+      130 +        if (g_bPythonMode)                                    
+      131 +                pcController = new CPythonProxController(pchTe
+          +mp, pc_epuck, "python/prox_controller.py");                   
+      132 +        else                                                  
+      133 +                pcController = new CTestProxController(pchTemp
+          +, pc_epuck);                                                  
+      134          pc_epuck->SetControllerType( CONTROLLER_TEST_PROX );
+      135          pc_epuck->SetController(pcController);
+      136  }
+     ...
+      140  
+      141  void CTestProxExp::CreateAndAddEpucks(CSimulator* pc_simulator
+           )
+      142  {
+      135 -        double px, py, ptheta;                                
+      136 -        CPythonControllerBase::ReadInitPose("python/prox_contr
+          -oller.py", px, py, ptheta);                                   
+      143 +        /* Initial pose: from the Python file in Python mode, 
+          +the original one otherwise */                                 
+      144 +        double px = 0.0, py = 1.2, ptheta = 1.57;             
+      145 +        if (g_bPythonMode)                                    
+      146 +                CPythonControllerBase::ReadInitPose("python/pr
+          +ox_controller.py", px, py, ptheta);                           
+      147          char label[100];
+      148          for (int i = 0; i < m_nRobotsNumber; i++)
+      149          {
+  ⎿  Updated experiments/testlightexp.cpp (+13 -3)
+      23  #include "wheelsactuator.h"
+      24  
+      25  /******************** Controllers **************/
+      26 +#include "testlightcontroller.h"                               
+      27  #include "pythonlightcontroller.h"
+      28  
+      29 +/* -P flag: use the Python controller instead of the C++ one */
+      30 +extern bool g_bPythonMode;                                     
+      31  
+      32  
+      33 +                                                               
+      34  using namespace std;
+      35  
+      36  /* Create Area */
+     ...
+      152          /* Create and add test light controller */
+      153          char pchTemp[128];
+      154          sprintf(pchTemp, "testlight");
+      151 -        CController* pcController = new CPythonLightController
+          -(pchTemp, pc_epuck, "python/light_controller.py");            
+      155 +        CController* pcController = NULL;                     
+      156 +        if (g_bPythonMode)                                    
+      157 +                pcController = new CPythonLightController(pchT
+          +emp, pc_epuck, "python/light_controller.py");                 
+      158 +        else                                                  
+      159 +                pcController = new CTestLightController(pchTem
+          +p, pc_epuck);                                                 
+      160          pc_epuck->SetControllerType( CONTROLLER_TEST_LIGHT );
+      161          pc_epuck->SetController(pcController);
+      162  }
+     ...
+      166  
+      167  void CTestLightExp::CreateAndAddEpucks(CSimulator* pc_simulato
+           r)
+      168  {
+      161 -        double px, py, ptheta;                                
+      162 -        CPythonControllerBase::ReadInitPose("python/light_cont
+          -roller.py", px, py, ptheta);                                  
+      169 +        /* Initial pose: from the Python file in Python mode, 
+          +the original one otherwise */                                 
+      170 +        double px = 0.5, py = 0.5, ptheta = 0.0;              
+      171 +        if (g_bPythonMode)                                    
+      172 +                CPythonControllerBase::ReadInitPose("python/li
+          +ght_controller.py", px, py, ptheta);                          
+      173          char label[100];
+      174          for (int i = 0; i < m_nRobotsNumber; i++)
+      175          {
+  ⎿  Updated experiments/testbluelightexp.cpp (+13 -3)
+      23  #include "wheelsactuator.h"
+      24  
+      25  /******************** Controllers **************/
+      26 +#include "testbluelightcontroller.h"                           
+      27  #include "pythonbluelightcontroller.h"
+      28  
+      29 +/* -P flag: use the Python controller instead of the C++ one */
+      30 +extern bool g_bPythonMode;                                     
+      31  
+      32  
+      33 +                                                               
+      34  using namespace std;
+      35  
+      36  /* Create Area */
+     ...
+      152          /* Create and add test light controller */
+      153          char pchTemp[128];
+      154          sprintf(pchTemp, "testbluelight");
+      151 -        CController* pcController = new CPythonBlueLightContro
+          -ller(pchTemp, pc_epuck, "python/bluelight_controller.py");    
+      155 +        CController* pcController = NULL;                     
+      156 +        if (g_bPythonMode)                                    
+      157 +                pcController = new CPythonBlueLightController(
+          +pchTemp, pc_epuck, "python/bluelight_controller.py");         
+      158 +        else                                                  
+      159 +                pcController = new CTestBlueLightController(pc
+          +hTemp, pc_epuck);                                             
+      160          pc_epuck->SetControllerType( CONTROLLER_TEST_BLUE_LIGH
+           T );
+      161          pc_epuck->SetController(pcController);
+      162  }
+     ...
+      166  
+      167  void CTestBlueLightExp::CreateAndAddEpucks(CSimulator* pc_simu
+           lator)
+      168  {
+      161 -        double px, py, ptheta;                                
+      162 -        CPythonControllerBase::ReadInitPose("python/bluelight_
+          -controller.py", px, py, ptheta);                              
+      169 +        /* Initial pose: from the Python file in Python mode, 
+          +the original one otherwise */                                 
+      170 +        double px = 0.5, py = 0.5, ptheta = 0.0;              
+      171 +        if (g_bPythonMode)                                    
+      172 +                CPythonControllerBase::ReadInitPose("python/bl
+          +uelight_controller.py", px, py, ptheta);                      
+      173          char label[100];
+      174          for (int i = 0; i < m_nRobotsNumber; i++)
+      175          {
+  ⎿  Updated experiments/testredlightexp.cpp (+13 -3)
+      23  #include "wheelsactuator.h"
+      24  
+      25  /******************** Controllers **************/
+      26 +#include "testredlightcontroller.h"                            
+      27  #include "pythonredlightcontroller.h"
+      28  
+      29 +/* -P flag: use the Python controller instead of the C++ one */
+      30 +extern bool g_bPythonMode;                                     
+      31  
+      32  
+      33 +                                                               
+      34  using namespace std;
+      35  
+      36  /* Create Area */
+     ...
+      152          /* Create and add test red light controller */
+      153          char pchTemp[128];
+      154          sprintf(pchTemp, "testredlight");
+      151 -        CController* pcController = new CPythonRedLightControl
+          -ler(pchTemp, pc_epuck, "python/redlight_controller.py");      
+      155 +        CController* pcController = NULL;                     
+      156 +        if (g_bPythonMode)                                    
+      157 +                pcController = new CPythonRedLightController(p
+          +chTemp, pc_epuck, "python/redlight_controller.py");           
+      158 +        else                                                  
+      159 +                pcController = new CTestRedLightController(pch
+          +Temp, pc_epuck);                                              
+      160          pc_epuck->SetControllerType( CONTROLLER_TEST_RED_LIGHT
+            );
+      161          pc_epuck->SetController(pcController);
+      162  }
+     ...
+      166  
+      167  void CTestRedLightExp::CreateAndAddEpucks(CSimulator* pc_simul
+           ator)
+      168  {
+      161 -        double px, py, ptheta;                                
+      162 -        CPythonControllerBase::ReadInitPose("python/redlight_c
+          -ontroller.py", px, py, ptheta);                               
+      169 +        /* Initial pose: from the Python file in Python mode, 
+          +the original one otherwise */                                 
+      170 +        double px = 0.5, py = 0.5, ptheta = 0.0;              
+      171 +        if (g_bPythonMode)                                    
+      172 +                CPythonControllerBase::ReadInitPose("python/re
+          +dlight_controller.py", px, py, ptheta);                       
+      173          char label[100];
+      174          for (int i = 0; i < m_nRobotsNumber; i++)
+      175          {
+  ⎿  … 9 more files changed
+
+● Build succeeded. A quick look at one of the arena experiments to check the
+  result reads well:
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Now the main check. I'll build the original pre-Python simulator (df9cf61) and
+  run every experiment in C++ mode in both binaries with the same seed. Their
+  output should be identical.
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Now I'll compare the outputs. Runs were cut off by time, so I compare the
+  lines both produced:
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● C++ mode matches the original simulator on all 15 experiments, with no Python
+  involved. Next I'll check 22 and 23 against the original C++ results, then run
+  the rest through simulator.py to confirm their Python controllers are used.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Python mode for 22 and 23 is unchanged: it agrees with the original C++ to
+  ±0.0001, the same as before this change. Now each remaining experiment,
+  launched through simulator.py:
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● All 13 Python controllers run through simulator.py without errors (experiment
+  1's prints nothing by design, which I checked separately). Next I'm cleaning
+  up the worktree and updating the README.
+
+  Ran 4 shell commands (ctrl+o to expand)
+
+● Bash(python3 - <<'EOF'
+      p='README'; s=open(p).read()…)
+  ⎿   M README
+      M experiments/braitenbergvehicle2experiment.cpp
+      M experiments/iri1exp.cpp
+     … +15 lines (ctrl+o to expand)
+  ⎿  Updated README (+62 -21)
+       3  
+       4  irsimPy is the IRSIM e-puck robot simulator (C++) with a Python
+           bridge: the
+       5  robot controllers of the test experiments (1-11), Braitenberg (
+          20), the
+       6 -subsumption experiments (22, 23) and IRI1 (30) are written in P
+         -ython, so you                                                  
+       6 +subsumption experiments (22, 23) and IRI1 (30) can be written i
+         +n Python, so you                                               
+       7  can program the robot without touching or recompiling C++.
+       8  
+       9 +Each of these experiments has two controllers, a C++ one and a 
+         +Python one.                                                    
+      10 +The command you use selects which one runs:                    
+      11 +                                                               
+      12 +  ./irsim -E 1                        C++ controller (controlle
+         +rs/*.cpp)                                                      
+      13 +  python3 python/simulator.py -E 1    Python controller (python
+         +/*.py)                                                         
+      14 +  ./irsim -E 1 -P                     Python controller (same a
+         +s above)                                                       
+      15 +                                                               
+      16 +Both use the same param files (-p), so the same experiment can 
+         +be run in C++                                                  
+      17 +and in Python. The other experiments (21, 24, 31, 32) only have
+         + C++                                                           
+      18 +controllers.                                                   
+      19 +                                                               
+      20  This README has two parts:
+      21  
+      22    PART 1 - PYTHON   how to run experiments and program robots i
+          n Python
+     ...
+      38  simulation step it sends the sensor readings to the controller 
+          through stdin,
+      39  and reads back the actuator commands (wheel speeds, lights, LED
+          s) from stdout.
+      40  
+      41 +simulator.py runs ./irsim with the -P flag (Python mode). Witho
+         +ut -P, ./irsim                                                 
+      42 +uses the C++ controllers and does not run Python at all.       
+      43 +                                                               
+      44  Editing a Python controller does NOT require recompiling: save 
+          the file and
+      45  run the simulator again.
+      46  
+     ...
+      55    python3 python/simulator.py -E 1                # run experim
+          ent 1
+      56    python3 python/simulator.py -E 30 -p paramFiles/iri2Param.txt
+      57  
+      44 -Options (same as ./irsim):                                     
+      58 +Options (same as ./irsim; simulator.py always adds -P):        
+      59  
+      60    -E <id>     experiment to run (without <id>: list experiments
+          )
+      61    -p <file>   parameter file
+     ...
+      71    Simulator(experiment=30, param_file="paramFiles/iri2Param.txt
+          ").run()
+      72  
+     … 122 more lines (ctrl+o to expand)
+
+❯ export conversation to conversations folder                                   
+
+● I can't export the conversation myself: /export is a Claude Code command that
+  only you can run. To save it next to the earlier ones, type:
+
+  /export claudeCodeConversations/20261119_ClaudeConversation.txt
+
+  The file name follows the format of the previous exports in
+  claudeCodeConversations/. If you run it now, this summary will be included.
+
+  Result: C++ or Python mode for all experiments
+
+  ┌──────────────────────────┬──────────────────────────────────────────────┐
+  │         Command          │                     Runs                     │
+  ├──────────────────────────┼──────────────────────────────────────────────┤
+  │                          │ the original C++ controller, with the        │
+  │ ./irsim -E <id>          │ original arena and starting position; Python │
+  │                          │  isn't used at all                           │
+  ├──────────────────────────┼──────────────────────────────────────────────┤
+  │ python3                  │                                              │
+  │ python/simulator.py -E   │ the Python controller (the launcher adds -P) │
+  │ <id>                     │                                              │
+  ├──────────────────────────┼──────────────────────────────────────────────┤
+  │ ./irsim -E <id> -P       │ the Python controller                        │
+  └──────────────────────────┴──────────────────────────────────────────────┘
+
+  This applies to experiments 1–11, 20, 22, 23 and 30. Experiments 21, 24, 31
+  and 32 only have C++ controllers.
+
+  Testing:
+  - C++ mode is identical to the original simulator. I built the pre-Python
+    version (df9cf61) and ran all 15 experiments in both binaries with the same
+    seed. The terminal output and every output file match line for line, up to
+    9.5 million lines per experiment, and no Python was involved.
+  - Python mode is unchanged.
+    - Experiments 22 and 23 still agree with the C++ controllers to ±0.0001.
+    - All 13 experiments run their Python controllers through simulator.py
+      without errors.
+
+  What changed:
+  - main.cpp: new -P flag (listed in ./irsim -h).
+  - The 15 experiment files:
+    - Controller: each creates the C++ or Python controller depending on -P.
+    - Starting position (1–11): without -P, each goes back to its original C++
+      starting position. For example, experiment 3 starts at (0, 1.2, 1.57).
+      With -P the position comes from INIT_X/Y/THETA in the Python file.
+    - Arena (20, 22, 23, 30): without -P, each has its original map string
+      again, restored from git with its commented-out alternatives. With -P the
+      map comes from the Python file.
+  - python/simulator.py: always passes -P.
+  - README:
+    - the introduction explains the two modes
+    - the Python sections say which settings apply only in Python mode
+    - Troubleshooting covers "my changes have no effect" (wrong mode)
+    - PART 2 has a table of every experiment's C++ controller
+
+  Nothing is committed yet. Should I commit and push it?
+
+✻ Crunched for 4h 51m 56s · done 6:52 PM
+
+❯ commit and push                                                               
+
+  Pushed to main (ctrl+o to expand)
+
+● I committed the C++/Python mode change as 835cc99 and pushed it to GitHub. All
+  18 changed files went in, and the working tree is clean. The push landed on
+  top of your latest commit (b567a9b).
+
+  So now ./irsim -E <id> runs the C++ controller, and python3 
+  python/simulator.py -E <id> (or ./irsim -E <id> -P) runs the Python one.
+
+  To save this session with the others, run /export 
+  claudeCodeConversations/20261119_ClaudeConversation.txt.
+
+✻ Cogitated for 10s · done 6:54 PM
+
+❯ did you exported the conversation to claudeCodeConversations/ folder?         
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● No, it isn't exported. claudeCodeConversations/ still has only the three
+  earlier files (20260623, 20260717 and 20260725). I can't run /export myself,
+  because it's a Claude Code command that only you can run.
+
+  To export this session, type this at the prompt:
+
+  /export claudeCodeConversations/20261119_ClaudeConversation.txt
+
+  Then tell me if you want it committed and pushed like the earlier conversation
+  files.
+
+  Alternatively, I could build a text file from this session's saved log
+  (~/.claude/projects/.../e3785d1b-….jsonl). It wouldn't look the same as the
+  files /export produced, so /export is the better choice for consistency.
+
+✻ Worked for 7s · done 6:56 PM
