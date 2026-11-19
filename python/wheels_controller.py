@@ -1,7 +1,7 @@
 import sys
 
-INIT_X     = 0.5  # initial x position (metres)
-INIT_Y     = 0.5  # initial y position (metres)
+INIT_X     = 0.0  # initial x position (metres)
+INIT_Y     = 0.0  # initial y position (metres)
 INIT_THETA = 0.0  # initial orientation (radians)
 
 

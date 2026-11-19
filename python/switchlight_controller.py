@@ -19,9 +19,10 @@ def step(step_number, time, step_interval, light):
         1 = switch nearest light ON
         None = do nothing (omit from return)
     """
-    print(f"[time {time}] Light: {[f'{v:.4f}' for v in light]}", file=sys.stderr)
 
     total_light = light[0] + light[7]
+    
+    print(f"[time {time}] Light: {[f'{v:.4f}' for v in light]} Total Light: {total_light}", file=sys.stderr)
 
     switch_cmd = None
     if total_light >= 0.9:
